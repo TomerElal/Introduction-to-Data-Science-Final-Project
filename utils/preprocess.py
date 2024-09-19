@@ -1,6 +1,5 @@
 import pandas as pd
 
-from sklearn.preprocessing import StandardScaler
 from utils.constants import PostFields
 
 
@@ -23,8 +22,4 @@ def preprocess_data(df):
     df[PostFields.HAS_IMAGE.value] = df[PostFields.HAS_IMAGE.value].astype(int)
     df[PostFields.HAS_VIDEO.value] = df[PostFields.HAS_VIDEO.value].astype(int)
 
-    # Standardize numeric data
-    scaler = StandardScaler()
-    scaled_data = scaler.fit_transform(df[numeric_columns])
-
-    return pd.DataFrame(scaled_data, columns=numeric_columns)
+    return df
