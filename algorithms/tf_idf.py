@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from utils.metrics import *
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 cnt_table = {}
+
+
 def tf(word, document):
     word = word.lower()
     words_in_document = []
@@ -37,6 +38,7 @@ def generate_tf_idf_values(documents):
         for word in cnt_table.keys():
             cnt_table[word].append(tfidf(word, doc.lower(), documents))
     return cnt_table
+
 
 def question_7():
     documents = []

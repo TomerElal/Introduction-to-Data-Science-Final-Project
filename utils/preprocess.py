@@ -2,13 +2,15 @@ import numpy as np
 import pandas as pd
 
 from utils.constants import PostFields
+from utils.eval_post_rating import *
+from sklearn.preprocessing import MinMaxScaler
 
 
 def load_data(file_path):
     return pd.read_csv(file_path)
 
 
-def preprocess_data(df):
+def preprocess_data(df, post_rating_eval_method=engagement_rating):
     # Handle categorical features: HasImage, HasVideo
     df[PostFields.HAS_IMAGE.value] = df[PostFields.HAS_IMAGE.value].astype(int)
     df[PostFields.HAS_VIDEO.value] = df[PostFields.HAS_VIDEO.value].astype(int)
@@ -24,4 +26,10 @@ def preprocess_data(df):
                         drop_first=False,
                         dtype=int)  # Ensure 1/0 values
 
+    # Normalize the predefined numeric columns
+    scaler = MinMaxScaler()
+    df[PostFields.NUMERIC_COLS.value] = scaler.fit_transform(df[PostFields.NUMERIC_COLS.value])
+
+    # Add PostRating based on the chosen method
+    df['PostRating'] = df.apply(post_rating_eval_method, axis=1)
     return df
