@@ -1,17 +1,7 @@
 import matplotlib.pyplot as plt
-import numpy as np
+import seaborn as sns
 
-from utils.preprocess import *
-
-
-def binary_distance(vec1, vec2):
-    if len(vec1) != len(vec2):
-        raise Exception("Vectors must have the same length")
-    dist = 0
-    for i in range(len(vec1)):
-        if vec1[i] != vec2[i]:
-            dist += 1
-    return dist
+from utils.metrics import *
 
 
 def bit_count_centroid_func(clusters):
@@ -35,14 +25,6 @@ def bit_count_centroid_func(clusters):
                     break
         new_centroids.append(new_cen)
     return [cen[:-1] for cen in new_centroids]
-
-
-def euclidean_distance(vec1, vec2):
-    if len(vec1) != len(vec2):
-        raise Exception("Vectors must have the same length")
-    vec1 = np.array(vec1)
-    vec2 = np.array(vec2)
-    return np.linalg.norm(vec1 - vec2)
 
 
 def mean_centroid_func(clusters):
@@ -74,30 +56,40 @@ def apply_kmeans(full_df, samples_data, features, k=3, max_iters=100, func=eucli
             # Assuming point is a NumPy array and index is a scalar value
             clusters[closest_centroid_index].append(np.append(point, index))
 
+        for cluster in clusters:
+            if not cluster:
+                # empty cluster - init a random centroid to it
+                random_point = X.sample(n=1)
+                new_centroid_values = random_point.to_numpy().flatten()  # Get the point values
+                random_index = random_point.index[0]  # Get the index of the point
+                cluster.append(np.append(new_centroid_values, random_index))
+
         new_centroids = update_centroid_func(clusters)
         for i, new_cen in enumerate(new_centroids):
             if np.any(np.isnan(new_cen)):
                 new_centroids[i] = initial_centroids[i]
         # Check for convergence
-        if np.all(np.array([cen[:-1] for cen in centroids]) == np.array(new_centroids)):
+        if np.all(np.array(centroids) == np.array(new_centroids)):
             break
         centroids = new_centroids
 
-    plot_clusters(full_df, clusters, samples_data.shape[1], title, features)
+    plot_clusters(full_df, clusters, samples_data.shape[1], title, features, centroids)
     return clusters, centroids
 
 
-def plot_clusters(df, clusters, num_cols, title, features):
+def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     # Plotting the clusters
     plt.figure(figsize=(10, 6))
     # Scatter plot for each cluster
-    colors = ['r', 'g', 'b']
+    colors = ['r', 'g', 'b']  # Add more colors if you have more than 3 clusters
+
     for i, cluster in enumerate(clusters):
         feature_np_a = np.array(
             [df.at[point[num_cols], features[0]] for point in cluster])
         feature_np_b = np.array(
             [df.at[point[num_cols], features[1]] for point in cluster])
 
+        # Plot the cluster points
         plt.scatter(feature_np_a, feature_np_b, c=colors[i],
                     label=f'Cluster {i + 1}', alpha=0.7)
 
@@ -110,36 +102,12 @@ def plot_clusters(df, clusters, num_cols, title, features):
     plt.show()
 
 
-def first_figure():
-    # Apply 1st K-means clustering - Numeric features
-    k_means_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
-    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
+def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distance,
+          update_centroid_func=mean_centroid_func):
     feature_vectors = df[k_means_features]
-    clusters, centroids = apply_kmeans(full_df=processed_data, samples_data=feature_vectors,
+    clusters, centroids = apply_kmeans(full_df=df, samples_data=feature_vectors,
                                        features=plot_features,
-                                       k=3, max_iters=100,
-                                       func=euclidean_distance,
-                                       title='K-means Clustering - NumReactions, NumComments',
-                                       update_centroid_func=mean_centroid_func)
-
-
-def second_figure():
-    # Apply 2nd K-means clustering - Categorical features
-    k_means_features = [PostFields.HAS_IMAGE.value, PostFields.HAS_VIDEO.value]
-    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
-    feature_vectors = df[k_means_features]
-    clusters, centroids = apply_kmeans(full_df=processed_data, samples_data=feature_vectors,
-                                       features=plot_features,
-                                       k=2, max_iters=100,
-                                       func=binary_distance,
-                                       title='K-means Clustering - HasImage, HasVideo',
-                                       update_centroid_func=bit_count_centroid_func)
-
-
-if __name__ == "__main__":
-    file_path = '../Linkedin_Posts.csv'
-    df = load_data(file_path)
-    processed_data = preprocess_data(df)
-
-    first_figure()
-    second_figure()
+                                       k=k, max_iters=100,
+                                       func=func,
+                                       title=title,
+                                       update_centroid_func=update_centroid_func)

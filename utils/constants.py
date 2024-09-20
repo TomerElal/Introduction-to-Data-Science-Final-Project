@@ -18,3 +18,13 @@ class PostFields(Enum):
     NUM_COMMENTS = 'NumComments'
     NUM_SHARES = 'NumShares'
     POST_RATING = 'PostRating'
+
+    NUMERIC_COLS = [
+        NUM_FOLLOWERS, NUM_WORDS,
+        NUM_PUNCTUATION, NUM_EMOJIS,
+        NUM_HASHTAGS, NUM_LINKS,
+        NUM_LINE_BREAKS, NUM_REACTIONS,
+        NUM_COMMENTS, NUM_SHARES
+    ]
+    
+    # TODO: add to NUMERIC_COLS -> POST_RATING
