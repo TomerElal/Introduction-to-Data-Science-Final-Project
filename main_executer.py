@@ -61,7 +61,7 @@ def tf_idf_execute(documents):
 
 
 if __name__ == "__main__":
-    file_path = 'Linkedin_Posts.csv'
+    file_path = 'data_mining/Linkedin_Posts.csv'
     df = preprocess_data(load_data(file_path))
     documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
 
