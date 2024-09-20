@@ -101,6 +101,10 @@ def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.grid(True)
     plt.show()
 
+    # Save the plots
+    plot_file_path = f'plots/{title.lower()}.png'
+    plt.savefig(plot_file_path)
+
 
 def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distance,
           update_centroid_func=mean_centroid_func):

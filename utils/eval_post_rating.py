@@ -67,6 +67,10 @@ def plot_correlation_with_post_rating(df, eval_func_name):
     plt.axhline(0, color='gray', linewidth=0.8, linestyle='--')
     plt.show()
 
+    # Save the plots
+    plot_file_path = f'plots/correlation_with_postrating_{eval_func_name}.png'
+    plt.savefig(plot_file_path)
+
 
 def evaluate_and_plot_corr(df):
     # Loop through each evaluation function
@@ -74,5 +78,4 @@ def evaluate_and_plot_corr(df):
         # Calculate PostRating using the evaluation function
         df['PostRating'] = df.apply(eval_func, axis=1)
 
-        # Plot the heatmap
         plot_correlation_with_post_rating(df, eval_func.__name__)
