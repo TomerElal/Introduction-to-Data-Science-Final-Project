@@ -3,7 +3,7 @@
 To execute the main script, run the following command in your terminal:
 
 ```bash
-python main_executable.py
+python main_executer.py
 ```
 ## Overview
 
