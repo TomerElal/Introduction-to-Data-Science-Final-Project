@@ -1,7 +1,8 @@
 import string
 import re
-from bs4 import BeautifulSoup
 import requests
+
+from bs4 import BeautifulSoup
 
 
 def call_project_translate(data):

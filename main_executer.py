@@ -1,3 +1,4 @@
+from algorithms.nlp import *
 from utils.constants import *
 from utils.eval_post_rating import evaluate_and_plot_corr
 from utils.metrics import *
@@ -26,8 +27,11 @@ def k_means_execute():
           k=3, func=euclidean_distance, update_centroid_func=mean_centroid_func)
 
     # # Apply 4th K-means clustering - Dummies features: TODO change for real ones.
-    k_means_features = [PostFields.POST_MAIN_SUBJECT.value + "_a", PostFields.POST_MAIN_SUBJECT.value + "_d",
-                        PostFields.POST_MAIN_FEELING.value + "_a", PostFields.POST_MAIN_FEELING.value + "_d"]
+    k_means_features = set()
+    for col in df.columns:
+        if col.startswith(PostFields.POST_MAIN_SUBJECT.value) or col.startswith(PostFields.POST_MAIN_FEELING.value):
+            k_means_features.add(col)
+    k_means_features = list(k_means_features)
     plot_features = [PostFields.NUM_WORDS.value, PostFields.NUM_SHARES.value]
     apply(df, k_means_features, plot_features, 'K-means Clustering - PostMainSubject, PostMainFeeling',
           k=3, func=binary_distance, update_centroid_func=bit_count_centroid_func)
@@ -43,10 +47,20 @@ def post_rating_execute():
     evaluate_and_plot_corr(df)
 
 
+def nlp_execute(documents):
+    tokens = [word for doc in documents for word in doc.split()]
+    create_log_info_and_plot(tokens)
+    create_word_cloud(tokens)
+
+
 if __name__ == "__main__":
     file_path = 'Linkedin_Posts.csv'
     df = preprocess_data(load_data(file_path))
 
+    # Calling all algorithms executions
     k_means_execute()
     post_rating_execute()
+    nlp_execute(df[PostFields.CONTENT_FIRST_LINE.value].tolist())
+
+
     # analyze_tfidf_impact TODO: not work yet

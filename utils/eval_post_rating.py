@@ -55,7 +55,7 @@ def plot_correlation_with_post_rating(df, eval_func_name):
     plt.figure(figsize=(14, 10))
 
     # Calculate the correlation matrix excluding the first column
-    correlation_matrix = df.iloc[:, 1:].corr()  # Exclude the first column
+    correlation_matrix = df.iloc[:, 2:].corr()  # Exclude the first column
     postrating_corr = correlation_matrix.loc[:, 'PostRating']
 
     # Create a bar plot for the correlations with PostRating

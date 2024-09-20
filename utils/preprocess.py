@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from utils.constants import PostFields
@@ -15,11 +14,6 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
     df[PostFields.HAS_IMAGE.value] = df[PostFields.HAS_IMAGE.value].astype(int)
     df[PostFields.HAS_VIDEO.value] = df[PostFields.HAS_VIDEO.value].astype(int)
 
-    # Replace POST_MAIN_SUBJECT and POST_MAIN_FEELING with random characters from ['a', 'b', 'c', 'd']
-    random_choices = ['a', 'b', 'c', 'd']
-    df[PostFields.POST_MAIN_SUBJECT.value] = np.random.choice(random_choices, size=len(df))
-    df[PostFields.POST_MAIN_FEELING.value] = np.random.choice(random_choices, size=len(df))
-
     # Create dummy variables for POST_MAIN_SUBJECT and POST_MAIN_FEELING
     df = pd.get_dummies(df,
                         columns=[PostFields.POST_MAIN_SUBJECT.value, PostFields.POST_MAIN_FEELING.value],
@@ -32,4 +26,10 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
 
     # Add PostRating based on the chosen method
     df['PostRating'] = df.apply(post_rating_eval_method, axis=1)
+
+    # Replacing cols order
+    cols = df.columns.tolist()
+    cols[1], cols[2] = cols[2], cols[1]
+    df = df[cols]
+
     return df
