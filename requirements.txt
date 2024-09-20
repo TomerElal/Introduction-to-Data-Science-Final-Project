@@ -4,3 +4,10 @@ pandas~=2.2.2
 openai~=1.35.10
 
 matplotlib~=3.9.1
+tiktoken~=0.7.0
+requests~=2.32.3
+
+regex~=2024.9.11
+numpy~=2.0.0
+scikit-learn~=1.5.1
+wordcloud~=1.9.3
