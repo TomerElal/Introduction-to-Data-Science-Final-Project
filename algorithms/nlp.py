@@ -20,10 +20,6 @@ def tokens_occurrences(tokens=None):
 
 
 def create_log_rank_log_freq_sorted_arr(tokens_occur_dict=None):
-    """
-    :return: 2D array, each entry is array size 3 in form [word_log_rank, word_log_freq, word]
-             The returned array will be sorted by the word_log_rank value increasing way.
-    """
     if not tokens_occur_dict:
         return []
     res = []

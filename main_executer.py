@@ -1,7 +1,7 @@
 from algorithms.nlp import *
 from algorithms.tf_idf import *
-from utils.preprocess import *
 from algorithms.k_means import *
+from utils.preprocess import *
 
 
 def k_means_execute():
@@ -23,7 +23,7 @@ def k_means_execute():
     apply(df, k_means_features, plot_features, 'K-means Clustering - NumHashtags, NumEmojis',
           k=3, func=euclidean_distance, update_centroid_func=mean_centroid_func)
 
-    # # Apply 4th K-means clustering - Dummies features: TODO change for real ones.
+    # # Apply 4th K-means clustering - Dummies features
     k_means_features = set()
     for col in df.columns:
         if col.startswith(PostFields.POST_MAIN_SUBJECT.value) or col.startswith(PostFields.POST_MAIN_FEELING.value):
