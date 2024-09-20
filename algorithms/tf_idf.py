@@ -1,10 +1,13 @@
 import math
+import numpy as np
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
 
 from utils.metrics import *
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+from wordcloud import WordCloud
 
 cnt_table = {}
 
@@ -126,3 +129,48 @@ def compute_tf_idf_for_top_words_for_each_fruit(df, sentences,
                 tf_idf_vectors_for_each_fruit_summery[index][top_word[1]][0]
     merged_df = pd.concat([df, df_top_words], axis=1)
     merged_df.to_csv("top_words_tf_idf_values.csv")
+
+
+def create_word_cloud(tfidf_vector, feature_names):
+    # Create a dictionary of words and their corresponding TF-IDF scores
+    tfidf_dict = {word: score for word, score in zip(feature_names, tfidf_vector)}
+
+    # Generate the word cloud
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(tfidf_dict)
+
+    # Display the word cloud
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')  # No axes for word cloud
+    plt.title("Word Cloud of PostFirstSen based on TF-IDF", fontsize=16)
+    plt.show()
+
+
+def analyze_tfidf_impact(df):
+    # Calculate TF-IDF for the 'PostFirstSen' column
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(df['PostFirstSen'])
+
+    # Convert to DataFrame
+    tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+
+    # Add PostRating to the TF-IDF DataFrame for analysis
+    tfidf_df['PostRating'] = df['PostRating']
+
+    # Calculate mean TF-IDF scores for each word
+    mean_tfidf = tfidf_df.mean().drop('PostRating')
+
+    # Create a word cloud for the mean TF-IDF values
+    create_word_cloud(mean_tfidf.values, mean_tfidf.index)
+
+    # Optional: Analyze correlation between TF-IDF values and PostRating
+    correlation = tfidf_df.corr()['PostRating'].drop('PostRating')
+
+    # Plot correlation
+    plt.figure(figsize=(14, 7))
+    correlation.plot(kind='bar', color='darkblue')
+    plt.title("Correlation of TF-IDF Values with PostRating", fontsize=16)
+    plt.ylabel("Correlation Coefficient", fontsize=14)
+    plt.xticks(rotation=45)
+    plt.axhline(0, color='gray', linewidth=0.8, linestyle='--')
+    plt.show()
