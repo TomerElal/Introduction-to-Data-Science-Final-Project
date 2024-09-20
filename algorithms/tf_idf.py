@@ -1,5 +1,4 @@
 import math
-import re
 
 from utils.utils import *
 
@@ -38,18 +37,8 @@ def tfidf(word, document, documents):
     return tf(word, document) * idf(word, documents)
 
 
-def generate_tf_idf_values(documents):
+def generate_tf_idf_values(documents, cnt_table):
     for doc in documents:
         for word in cnt_table.keys():
             cnt_table[word].append(tfidf(word, doc.lower(), documents))
     return cnt_table
-
-
-if __name__ == "__main__":
-    documents = extract_documents()
-    vocab_list = create_vocab_set(documents)
-    cnt_table = {word: [] for word in vocab_list}
-    generate_tf_idf_values(documents)
-    print(cnt_table)
-    print(len(cnt_table['telegram']))
-

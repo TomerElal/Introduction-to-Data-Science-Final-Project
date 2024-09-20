@@ -1,9 +1,8 @@
 import math
 import nltk
-from matplotlib import pyplot as plt
 
+from matplotlib import pyplot as plt
 from nltk import pos_tag
-from utils.utils import *
 from wordcloud import WordCloud
 
 

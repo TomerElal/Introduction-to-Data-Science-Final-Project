@@ -1,10 +1,7 @@
 from algorithms.nlp import *
-from utils.constants import *
-from utils.eval_post_rating import evaluate_and_plot_corr
-from utils.metrics import *
+from algorithms.tf_idf import *
 from utils.preprocess import *
 from algorithms.k_means import *
-from algorithms.tf_idf import *
 
 
 def k_means_execute():
@@ -53,14 +50,21 @@ def nlp_execute(documents):
     create_word_cloud(tokens)
 
 
+def tf_idf_execute(documents):
+    vocab_list = create_vocab_set(documents)
+    cnt_table = {word: [] for word in vocab_list}
+    generate_tf_idf_values(documents, cnt_table)
+    for k, v in cnt_table.items():
+        print(k, v)
+
+
 if __name__ == "__main__":
     file_path = 'Linkedin_Posts.csv'
     df = preprocess_data(load_data(file_path))
+    documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
 
     # Calling all algorithms executions
     k_means_execute()
     post_rating_execute()
-    nlp_execute(df[PostFields.CONTENT_FIRST_LINE.value].tolist())
-
-
-    # analyze_tfidf_impact TODO: not work yet
+    nlp_execute(documents)
+    tf_idf_execute(documents)
