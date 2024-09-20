@@ -99,11 +99,12 @@ def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.ylabel(features[1])
     plt.legend()
     plt.grid(True)
-    plt.show()
 
     # Save the plots
     plot_file_path = f'plots/{title.lower()}.png'
     plt.savefig(plot_file_path)
+
+    plt.show()
 
 
 def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distance,

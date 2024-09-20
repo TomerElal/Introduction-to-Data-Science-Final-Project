@@ -65,11 +65,13 @@ def plot_correlation_with_post_rating(df, eval_func_name):
     plt.ylabel("Correlation Coefficient", fontsize=22)
     plt.xticks(rotation=45)
     plt.axhline(0, color='gray', linewidth=0.8, linestyle='--')
-    plt.show()
+
 
     # Save the plots
     plot_file_path = f'plots/correlation_with_postrating_{eval_func_name}.png'
     plt.savefig(plot_file_path)
+
+    plt.show()
 
 
 def evaluate_and_plot_corr(df):
