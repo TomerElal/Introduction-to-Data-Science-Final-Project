@@ -57,6 +57,8 @@ def tf_idf_execute(documents):
     for k, v in cnt_table.items():
         print(k, v)
 
+    plot_all_top_tfidf_words(cnt_table)
+
 
 if __name__ == "__main__":
     file_path = 'Linkedin_Posts.csv'
