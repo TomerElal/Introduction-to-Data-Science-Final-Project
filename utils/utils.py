@@ -1,8 +1,9 @@
 import string
-import re
-import requests
-
 from bs4 import BeautifulSoup
+import requests
+import regex as re
+import unicodedata
+import emoji
 
 
 def call_project_translate(data):
@@ -157,16 +158,6 @@ def get_content_first_line(content):
 
     Returns:
     str: The first line of content.
-
-    Example:
-    >>> get_content_first_line("This is the first sentence. Here is the second.")
-    'This is the first sentence.'
-    >>> get_content_first_line("This is a long text without punctuation but with more than twenty words so we stop at the twentieth word, and we won't take this part.")
-    'This is a long text without punctuation but with more than twenty words so we stop at the twentieth word'
-    >>> get_content_first_line("First line\\nSecond line")
-    'First line'
-    >>> get_content_first_line("No punctuation and less than twenty words")
-    'No punctuation and less than twenty words'
     """
     # Check for sentence-ending punctuation or newline
     sentence_end_match = re.search(r'([.!?])\s|(\n)', content)
@@ -174,19 +165,24 @@ def get_content_first_line(content):
 
     # If we find a sentence-ending punctuation or newline
     if sentence_end_match:
-        # Return everything up to the first sentence-ending punctuation or newline
         first_sentence = content[:sentence_end_match.end()].strip()
-
-    # If no sentence-ending punctuation or newline, return the first 20 words
     elif len(words) > 20:
         first_sentence = ' '.join(words[:20])
     else:
         first_sentence = content.strip()
 
-    # Replace everything that is not alphabetic (from any language) with a space
-    first_sentence_cleaned = re.sub(r'[^\p{L}]', ' ', first_sentence)
+    # Replace everything that is not alphabetic or punctuation with a space
+    first_sentence_cleaned = re.sub(r'[^\p{L}\s.,!?]', ' ', first_sentence)
 
     translated_sentence = call_project_translate(first_sentence_cleaned)
+
+    # Normalize the string to remove special characters
+    translated_sentence = unicodedata.normalize('NFKD', translated_sentence).encode('ascii', 'ignore').decode(
+        'utf-8')
+
+    # Remove emojis
+    translated_sentence = emoji.replace_emoji(translated_sentence, replace="")
+
     return translated_sentence
 
 
@@ -236,7 +232,8 @@ EMOJIS_CONFIG_KEY = 'emojis'
 
 
 def run():
-    print(call_project_translate("איך בונים סיפור שהופך לויראלי?hashtag מחשבותסופש האבות הבריטים מתוסכלים."))
+    print(get_content_first_line(
+        "We are looking for an experienced 𝗗𝗕𝗔 with strong knowledge at 𝗦𝗤𝗟 𝗦𝗲𝗿𝘃𝗲𝗿 𝗗𝗮𝘁𝗮𝗯𝗮𝘀𝗲 to be 𝗼𝗻𝗲 of us!𝗤𝘂𝗮𝗹𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻𝘀:👉3 years working with production environment (Enterprise companies – Huge Advantage).👉 Designing high availability and disaster recovery solutions.👉Strong knowledge of SQL Server features (replication, SSIS, SSRS)👉Experience with Mirroring \ Always on"))
 
 
 if __name__ == '__main__':
