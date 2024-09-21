@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from utils.metrics import *
 
@@ -115,3 +116,47 @@ def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distan
                                        func=func,
                                        title=title,
                                        update_centroid_func=update_centroid_func)
+
+    plot_cluster_avg_postrating(clusters, df, title)
+
+
+def plot_cluster_avg_postrating(clusters, df, title):
+    cluster_avg_postrating = {}
+
+    # Calculate the average PostRating for each cluster based on the original indices in df
+    for cluster_id, points in enumerate(clusters):
+        original_indices = [point[-1] for point in points]  # Extract original indices
+        post_ratings = df.loc[original_indices, 'PostRating']  # Get PostRating for those original indices
+        cluster_avg_postrating[cluster_id] = np.mean(post_ratings)
+
+    # Sort the clusters by index
+    cluster_indices = sorted(cluster_avg_postrating.keys())
+    avg_ratings = [cluster_avg_postrating[idx] for idx in cluster_indices]
+
+    # Plot the average PostRating for each cluster
+    plt.figure(figsize=(10, 8))  # Reduced plot size
+
+    # Bar plot using Seaborn for better visualization
+    sns.barplot(x=cluster_indices, y=avg_ratings, palette='viridis')
+
+    # Add title and labels
+    plt.title(f'Average PostRating for each cluster -{title.split("-")[-1].lower()}', fontsize=18)
+    plt.xlabel('Cluster', fontsize=14)
+    plt.ylabel('Average PostRating', fontsize=14)
+
+    # Adjust the y-axis limit for better scaling
+    plt.ylim(0, max(avg_ratings) * 1.2)  # Add a buffer of 20% above the maximum rating
+
+    # Display the value of each bar with adjusted text position
+    for index, value in enumerate(avg_ratings):
+        plt.text(index, value + 10, f'{value:.2f}', ha='center', fontsize=22)  # Adjusted text height
+
+    # Adjust layout to avoid clipping
+    plt.tight_layout()
+
+    # Save the plot
+    plot_file_path = f'plots/cluster_to_avg_rating_plot - {title.split("-")[-1].lower().strip().lstrip()}.png'
+    plt.savefig(plot_file_path)
+
+    # Show the plot
+    plt.show()

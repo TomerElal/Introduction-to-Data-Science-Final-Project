@@ -22,7 +22,7 @@ By utilizing sophisticated crawling techniques and advanced algorithms, we aim t
 
 ## Data Extraction
 
-The project involves crawling LinkedIn posts to extract metadata such as:
+The project involves crawling LinkedIn posts by parsing HTML tags to extract metadata such as:
 - **UserName:** The name of the user who made the post.
 - **NumFollowers:** The number of followers the user has.
 - **NumWords:** The total number of words in the post.
