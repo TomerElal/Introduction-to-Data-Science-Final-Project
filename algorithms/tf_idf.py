@@ -56,7 +56,7 @@ def generate_tf_idf_values(documents, uniq_words):
     return tf_idf_dict
 
 
-def get_similar_documents(doc_dict, key, top_n=5):
+def get_similar_documents(doc_dict, key, top_n=3):
     # Extract the TF-IDF values for the given key
     target_doc_tfidf = np.array(doc_dict[key]).reshape(1, -1)
 
@@ -73,21 +73,62 @@ def get_similar_documents(doc_dict, key, top_n=5):
     return similar_docs
 
 
-def plot_similar_documents(similar_docs):
-    doc_keys, similarities = zip(*similar_docs)
+def wrap_text(text, max_width):
+    words = text.split()
+    wrapped_lines = []
+    current_line = ""
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(doc_keys, similarities, color='blue')
-    plt.title('Top 5 Similar Documents', fontsize=16)
-    plt.xlabel('Document Keys', fontsize=14)
-    plt.ylabel('Cosine Similarity', fontsize=14)
-    plt.xticks(rotation=45)
-    plt.ylim(0, 1)  # Cosine similarity ranges from 0 to 1
+    for word in words:
+        if len(current_line) + len(word) + 1 <= max_width:
+            current_line += (word + " ")
+        else:
+            wrapped_lines.append(current_line.strip())
+            current_line = word + " "
+
+    wrapped_lines.append(current_line.strip())  # Add the last line
+    return '\n'.join(wrapped_lines)
+
+
+def plot_similar_documents(similar_docs, df):
+    doc_keys, similarities = zip(*similar_docs)
+    wrapped_keys = [wrap_text(key, 15) for key in doc_keys]
+
+    post_ratings = []
+    for key in doc_keys:
+        if key in df.index:
+            post_ratings.append(df.loc[key, 'PostRating'])
+        else:
+            post_ratings.append(0)
+
+    plt.figure(figsize=(12, 8))
+
+    # Create the first subplot for cosine similarities
+    ax1 = plt.subplot(211)  # First subplot
+    ax1.bar(wrapped_keys, similarities, color='blue')
+    ax1.set_title('Top 3 Similar Documents', fontsize=18)
+    ax1.set_ylabel('Cosine Similarity', fontsize=16)
+    ax1.set_ylim(0, 1)  # Cosine similarity ranges from 0 to 1
 
     for index, value in enumerate(similarities):
-        plt.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=12)
+        ax1.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
+
+    ax1.grid(axis='y', linestyle='--', alpha=0.7)  # Add grid for better readability
+
+    # Create the second subplot for PostRating values
+    ax2 = plt.subplot(212)  # Second subplot
+    ax2.bar(wrapped_keys, post_ratings, color='orange')
+    ax2.set_title('PostRating of Similar Documents', fontsize=18)
+    ax2.set_ylabel('PostRating', fontsize=16)
+    ax2.set_ylim(min(post_ratings) - 0.1, max(post_ratings) + 0.1)  # Set limits based on PostRating values
+
+    for index, value in enumerate(post_ratings):
+        ax2.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
 
     plt.tight_layout()
+    # Save the plots
+    plot_file_path = f'plots/similar_docs_prediction_with_their_ratings.png'
+    plt.savefig(plot_file_path)
+
     plt.show()
 
 
