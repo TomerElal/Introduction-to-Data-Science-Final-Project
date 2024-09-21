@@ -40,7 +40,7 @@ POST_CONTAINER_CLASS = "feed-shared-update-v2"
 SHOW_MORE_BUTTON_XPATH = ("//button[contains(@class, 'scaffold-finite-scroll__load-button')"
                           " and contains(., 'Show more results')]")
 EMOJIS_CONFIG_KEY = 'emojis'
-NUM_OF_POSTS_THRESHOLD = 20  # Minimum posts required
+NUM_OF_POSTS_THRESHOLD = 15  # Minimum posts required
 NUM_OF_TOKENS_THRESHOLD = 29000
 NUM_OF_POSTS_LIMIT = 100  # Maximum posts possible
 USERS_CONFIG_KEY = 'users'
@@ -64,10 +64,14 @@ def extract_user_posts_attributes(driver, user_name):
     list: A list of post attributes.
     """
 
-    posts = get_user_posts(driver, user_name)
+    unfiltered_posts = get_user_posts(driver, user_name)
+
+    # Make a list of keys to remove (you can't modify the dictionary while iterating over it)
+    posts = [post for post, _ in unfiltered_posts.items() if "reposted this" not in post.text]
     posts_attributes = []
     if len(posts) < NUM_OF_POSTS_THRESHOLD:
         return posts_attributes
+    print(f"\nTotal number of filtered posts retrieved: {len(posts)} for user: {user_name}")
     total_tokens = 0
     multiplier = 1
     for post in posts:
@@ -82,17 +86,17 @@ def extract_user_posts_attributes(driver, user_name):
             #     multiplier += 1
             #     time.sleep(60)
 
-            print(f"\nStarted Gpt response for {user_name}.")
-            gpt_response = extract_info_from_gpt(post_content, prefix_prompt)
-            curr_num_of_tokens = (len(tokenizer.encode(prefix_prompt + post_content))
-                                  + len(tokenizer.encode(gpt_response)))
-            print("Curr post tokens used: " + str(curr_num_of_tokens))
-            total_tokens += curr_num_of_tokens
-            gpt_response = gpt_response.strip().split('\n')
-            post_main_subject, post_main_feeling = gpt_response[0], gpt_response[1]
-            print(f"Finished Gpt response for {user_name}.")
+            # print(f"\nStarted Gpt response for {user_name}.")
+            # gpt_response = extract_info_from_gpt(post_content, prefix_prompt)
+            # curr_num_of_tokens = (len(tokenizer.encode(prefix_prompt + post_content))
+            #                       + len(tokenizer.encode(gpt_response)))
+            # print("Curr post tokens used: " + str(curr_num_of_tokens))
+            # total_tokens += curr_num_of_tokens
+            # gpt_response = gpt_response.strip().split('\n')
+            # post_main_subject, post_main_feeling = gpt_response[0], gpt_response[1]
+            # print(f"Finished Gpt response for {user_name}.")
 
-            # post_main_subject, post_main_feeling = None, None
+            post_main_subject, post_main_feeling = None, None
 
             comments, has_image, has_video, reactions, shares = extract_data_from_post(post)
             post_attributes = compute_post_attributes(
@@ -275,7 +279,7 @@ def get_user_posts(driver, user_name):
 
         ordered_posts_set.update(dict.fromkeys(new_posts))
 
-    print(f"\nTotal number of posts retrieved: {len(ordered_posts_set)}")
+    print(f"\nTotal number of posts retrieved: {len(ordered_posts_set)} for user: {user_name}")
     return ordered_posts_set
 
 
@@ -391,8 +395,8 @@ def extract_all_data(linkedin_users: set, driver):
     driver (webdriver): The Selenium WebDriver instance.
     df (DataFrame): The DataFrame to add the data to.
     """
-    for user in linkedin_users:
-
+    for index, user in enumerate(linkedin_users):
+        print(f"Starting data mining process for user number {index}: {user}")
         try:
             user_attributes = extract_user_attributes(driver, user)
             posts_attributes = extract_user_posts_attributes(driver, user)
