@@ -149,7 +149,7 @@ def plot_cluster_avg_postrating(clusters, df, title):
 
     # Display the value of each bar with adjusted text position
     for index, value in enumerate(avg_ratings):
-        plt.text(index, value + 10, f'{value:.2f}', ha='center', fontsize=22)  # Adjusted text height
+        plt.text(index, value + 0.03, f'{value:.2f}', ha='center', fontsize=22)  # Adjusted text height
 
     # Adjust layout to avoid clipping
     plt.tight_layout()

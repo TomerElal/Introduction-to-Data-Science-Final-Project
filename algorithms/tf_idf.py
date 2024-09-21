@@ -89,14 +89,15 @@ def wrap_text(text, max_width):
     return '\n'.join(wrapped_lines)
 
 
-def plot_similar_documents(similar_docs, df):
+def plot_similar_documents(similar_docs, df, post_to_predict):
     doc_keys, similarities = zip(*similar_docs)
     wrapped_keys = [wrap_text(key, 15) for key in doc_keys]
 
     post_ratings = []
     for key in doc_keys:
-        if key in df.index:
-            post_ratings.append(df.loc[key, 'PostRating'])
+        if key in df['ContentFirstLine'].values:
+            line_index = df[df['ContentFirstLine'] == key].index[0]  # Get the first match
+            post_ratings.append(df.loc[line_index, 'PostRating'])
         else:
             post_ratings.append(0)
 
@@ -105,7 +106,7 @@ def plot_similar_documents(similar_docs, df):
     # Create the first subplot for cosine similarities
     ax1 = plt.subplot(211)  # First subplot
     ax1.bar(wrapped_keys, similarities, color='blue')
-    ax1.set_title('Top 3 Similar Documents', fontsize=18)
+    ax1.set_title(f'Top 3 Similar Documents for "{post_to_predict}"', fontsize=18)
     ax1.set_ylabel('Cosine Similarity', fontsize=16)
     ax1.set_ylim(0, 1)  # Cosine similarity ranges from 0 to 1
 
@@ -119,7 +120,7 @@ def plot_similar_documents(similar_docs, df):
     ax2.bar(wrapped_keys, post_ratings, color='orange')
     ax2.set_title('PostRating of Similar Documents', fontsize=18)
     ax2.set_ylabel('PostRating', fontsize=16)
-    ax2.set_ylim(min(post_ratings) - 0.1, max(post_ratings) + 0.1)  # Set limits based on PostRating values
+    ax2.set_ylim(0, max(post_ratings) + 0.5)  # Set limits based on PostRating values
 
     for index, value in enumerate(post_ratings):
         ax2.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)

@@ -21,8 +21,8 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
                         dtype=int)  # Ensure 1/0 values
 
     # Normalize the predefined numeric columns
-    scaler = MinMaxScaler()
-    df[PostFields.NUMERIC_COLS.value] = scaler.fit_transform(df[PostFields.NUMERIC_COLS.value])
+    #scaler = MinMaxScaler()
+    #df[PostFields.NUMERIC_COLS.value] = scaler.fit_transform(df[PostFields.NUMERIC_COLS.value])
 
     # Add PostRating based on the chosen method
     df['PostRating'] = df.apply(post_rating_eval_method, axis=1)

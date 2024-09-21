@@ -39,17 +39,17 @@ def tf_idf_execute(documents, post_to_predict=None):
     tf_idf_dict = generate_tf_idf_values(documents, vocab_list)
 
     similar_docs = get_similar_documents(tf_idf_dict, post_to_predict)
-    plot_similar_documents(similar_docs, df)
+    plot_similar_documents(similar_docs, df, post_to_predict)
 
 
 if __name__ == "__main__":
-    #file_path = 'data_mining/Linkedin_Posts.csv'
-    file_path = 'data_mining/posts_thin.csv'
+    file_path = 'data_mining/Linkedin_Posts.csv'
+    # file_path = 'data_mining/posts_thin.csv'
     df = preprocess_data(load_data(file_path))
     documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
 
     # Calling all algorithms executions
-    #k_means_execute()
-    #post_rating_execute()
-    #nlp_execute(documents)
-    tf_idf_execute(documents, "So what are she doing here, I do understand.")
+    k_means_execute()
+    post_rating_execute()
+    nlp_execute(documents)
+    tf_idf_execute(documents, "Exiting News!! im starting a new job")
