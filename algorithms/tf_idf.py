@@ -1,9 +1,17 @@
 import math
-
+import nltk
+import re
 import numpy as np
+
+from collections import Counter
 from matplotlib import pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 from utils.utils import *
+from nltk.corpus import words
+
+
+nltk.download('words')
+english_words = set(words.words())
 
 
 def create_vocab_set(sentences):
@@ -13,7 +21,7 @@ def create_vocab_set(sentences):
     for sentence in sentences:
         for word in sentence.split(" "):
             word = re.sub(r'[^\w\s]', '', word)  # Remove punctuation
-            if word.isalnum() and word.lower() not in uniq_words:  # Check if the word contains only alphabetic characters
+            if word.isalpha() and word.lower() not in uniq_words and word.lower() in english_words:
                 uniq_words.add(word.lower())
     return list(uniq_words)
 
@@ -23,47 +31,55 @@ def tf(word, document):
     words_in_document = []
     for w in document.split(" "):
         w = re.sub(r'[^\w\s]', '', w)  # Remove punctuation
-        if w.isalnum():  # Check if the word contains only alphabetic characters
+        if w.isalpha():  # Check if the word contains only alphabetic characters
             words_in_document.append(w.lower())
     count_appearances = words_in_document.count(word)
     return count_appearances / len(words_in_document)
 
 
-def idf(word, documents):
+def idf(vocab_set, documents):
+    idf_dict = {}
     documents_no_rep = list(set(documents))
-    number_of_documents_with_word = sum([1 for document in documents_no_rep if
-                                         word.lower() in document.lower()])
-    if not number_of_documents_with_word:
-        return 1
-    return math.log10(len(documents) / number_of_documents_with_word)
+
+    for word in vocab_set:
+        number_of_documents_with_word = sum([1 for document in documents_no_rep if word.lower() in document.lower()])
+        if not number_of_documents_with_word:
+            idf_dict[word] = 1
+            continue
+        idf_value = math.log10(len(documents) / number_of_documents_with_word)
+        idf_dict[word] = idf_value
+    return idf_dict
 
 
-def tfidf(word, document, documents):
-    return tf(word, document) * idf(word, documents)
+def tfidf(word, document, idf_dict):
+    return tf(word, document) * idf_dict.get(word, 0)  # Default IDF to 0 if not found
 
 
-def generate_tf_idf_values(documents, uniq_words):
-    """
-    Returns: A dict size
-    key=#docs, value=list size #uniq_words each entry is tf-idf value(word, i'th doc, docs)
-    """
+def generate_tf_idf_values(documents, uniq_words, idf_dict):
     tf_idf_dict = {}
+    uniq_words = np.array(uniq_words)
     for i, doc in enumerate(documents):
-        print(f"process doc number {i} of {len(documents)}")
-        tf_idf_dict[doc] = []
-        for word in uniq_words:
-            tf_idf_dict[doc].append(tfidf(word, doc.lower(), documents))
+        print(f"Processing document {i + 1} of {len(documents)}")
+        words_in_document = preprocess_document(doc)
+        word_counts = Counter(words_in_document)
+        total_words = len(words_in_document)
+
+        tf_values = np.array([word_counts[word] / total_words if word in word_counts else 0 for word in uniq_words])
+        idf_values = np.array([idf_dict.get(word, 0) for word in uniq_words])
+        tf_idf_values = tf_values * idf_values
+        tf_idf_dict[doc] = tf_idf_values.tolist()
+
     return tf_idf_dict
 
 
-def get_similar_documents(doc_dict, key, top_n=3):
+def get_similar_documents(doc_dict, new_doc, top_n=3):
     # Extract the TF-IDF values for the given key
-    target_doc_tfidf = np.array(doc_dict[key]).reshape(1, -1)
+    target_doc_tfidf = np.array(doc_dict[new_doc]).reshape(1, -1)
 
     # Calculate cosine similarities between the target document and all other documents
     similarities = {}
     for doc_key, tfidf_values in doc_dict.items():
-        if doc_key != key:  # Skip the target document itself
+        if doc_key != new_doc:  # Skip the target document itself
             cosine_sim = cosine_similarity(target_doc_tfidf, np.array(tfidf_values).reshape(1, -1))[0][0]
             similarities[doc_key] = cosine_sim
 
@@ -87,6 +103,11 @@ def wrap_text(text, max_width):
 
     wrapped_lines.append(current_line.strip())  # Add the last line
     return '\n'.join(wrapped_lines)
+
+
+def preprocess_document(document):
+    words = re.sub(r'[^\w\s]', '', document.lower()).split()
+    return words
 
 
 def plot_similar_documents(similar_docs, df, post_to_predict):
@@ -127,32 +148,7 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
 
     plt.tight_layout()
     # Save the plots
-    plot_file_path = f'plots/similar_docs_prediction_with_their_ratings.png'
-    plt.savefig(plot_file_path)
-
-    plt.show()
-
-
-def plot_all_top_tfidf_words(cnt_table):
-    max_tfidf_values = {word: max(tfidf_vals) for word, tfidf_vals in cnt_table.items()}
-    sorted_words = sorted(max_tfidf_values.items(), key=lambda x: x[1], reverse=True)
-    words, tfidf_values = zip(*sorted_words)
-
-    # Limit the number of top tf-idf words for better visibility
-    limit = 20
-    words = words[:limit]
-    tfidf_values = tfidf_values[:limit]
-
-    # Create the bar plot
-    plt.figure(figsize=(12, 8))
-    plt.barh(words, tfidf_values, color='skyblue')
-    plt.xlabel('Maximum TF-IDF Value', fontsize=22)
-    plt.title('Top Words by Maximum TF-IDF Value', fontsize=22)
-    plt.gca().invert_yaxis()
-    plt.tick_params(axis='both', labelsize=15)
-
-    # Save the plots
-    plot_file_path = f'plots/top_tf_idf_words.png'
+    plot_file_path = f'plots/tf_idf_plots/similar_docs_prediction_with_their_ratings.png'
     plt.savefig(plot_file_path)
 
     plt.show()

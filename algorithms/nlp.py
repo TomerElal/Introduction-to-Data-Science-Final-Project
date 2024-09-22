@@ -45,7 +45,7 @@ def plot_log_log_graph(log_log_arr, title=None, x_axis_title=None, y_axis_title=
     plt.grid(True)
 
     # Save the plots
-    plot_file_path = f'plots/log_rank_log_freq_plot.png'
+    plot_file_path = f'plots/nlp_plots/log_rank_log_freq_plot.png'
     plt.savefig(plot_file_path)
 
     plt.show()
@@ -67,7 +67,7 @@ def create_word_cloud(words):
     plt.axis('off')
 
     # Save the plots
-    plot_file_path = f'plots/word_cloud.png'
+    plot_file_path = f'plots/nlp_plots/word_cloud.png'
     plt.savefig(plot_file_path)
 
     plt.show()

@@ -2,7 +2,6 @@ import pandas as pd
 
 from utils.constants import PostFields
 from utils.eval_post_rating import *
-from sklearn.preprocessing import MinMaxScaler
 
 
 def load_data(file_path):
@@ -19,10 +18,6 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
                         columns=[PostFields.POST_MAIN_SUBJECT.value, PostFields.POST_MAIN_FEELING.value],
                         drop_first=False,
                         dtype=int)  # Ensure 1/0 values
-
-    # Normalize the predefined numeric columns
-    #scaler = MinMaxScaler()
-    #df[PostFields.NUMERIC_COLS.value] = scaler.fit_transform(df[PostFields.NUMERIC_COLS.value])
 
     # Add PostRating based on the chosen method
     df['PostRating'] = df.apply(post_rating_eval_method, axis=1)
