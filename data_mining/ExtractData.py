@@ -42,6 +42,7 @@ SHOW_MORE_BUTTON_XPATH = ("//button[contains(@class, 'scaffold-finite-scroll__lo
 EMOJIS_CONFIG_KEY = 'emojis'
 NUM_OF_POSTS_THRESHOLD = 15  # Minimum posts required
 NUM_OF_TOKENS_THRESHOLD = 29000
+TIME_TO_LOGIN = 3
 NUM_OF_POSTS_LIMIT = 100  # Maximum posts possible
 USERS_CONFIG_KEY = 'users'
 MY_USER_EMAIL = "username@gmail.com"  # Replace with your LinkedIn email
@@ -363,7 +364,7 @@ def login():
     password.send_keys(MY_USER_PASSWORD)
     driver.find_element(By.XPATH, LOGIN_BUTTON_XPATH).click()
 
-    time.sleep(12)  # Give time for login to complete
+    time.sleep(TIME_TO_LOGIN)  # Give time for login to complete
     return driver
 
 
