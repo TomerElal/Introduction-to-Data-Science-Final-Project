@@ -35,7 +35,6 @@ users = [
     "danmian",
     "johnrushx",
     "danieldayan",
-    "eitan-ben-avi-1b7899236",
     "na-ama-schultz-547027101",
     "michal-barkai-brody-a325842a",
     "yael-zeevi-kalomiti",
@@ -67,7 +66,6 @@ users = [
     "milos-jokic",
     "anubhav-khanna2386",
     "evgeny-sinay-יבגני-סיני",
-    "pavelberengoltz",
     "einatwilf",
     "elianebarnett",
     "saurabh-kumar-82417a137",
@@ -80,9 +78,7 @@ users = [
     "yair-berger-4b9911177",
     "alon-barak",
     "ravimishraphysics",
-    "omri-madar",
     "andresvourakis",
-    "danysz",
     "yarin-sultan",
     "gilad-tsehori",
     "benedictasare",
@@ -139,5 +135,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-    print(remove_duplicates(users))
+    main()
+    # print(remove_duplicates(users))
