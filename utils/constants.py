@@ -19,9 +19,10 @@ class PostFields(Enum):
     NUM_SHARES = 'NumShares'
     POST_RATING = 'PostRating'
     CONTENT_FIRST_LINE = 'ContentFirstLine'
+    POST_CONTENT = 'PostStart'
 
     NUMERIC_COLS = [
-        NUM_FOLLOWERS, NUM_WORDS,
+        NUM_WORDS,
         NUM_PUNCTUATION, NUM_EMOJIS,
         NUM_HASHTAGS, NUM_LINKS,
         NUM_LINE_BREAKS

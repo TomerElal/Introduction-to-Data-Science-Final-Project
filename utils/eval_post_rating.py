@@ -13,5 +13,5 @@ def engagement_rating(row):
                   num_comments_factor * row['NumComments'] +
                   num_shares_factor * row['NumShares'])
     if row['NumFollowers'] > 0:  # Avoid division by zero
-        return 100 * engagement / row['NumFollowers']
+        return engagement / row['NumFollowers']
     return 0
