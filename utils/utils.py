@@ -171,19 +171,36 @@ def get_content_first_line(content):
     else:
         first_sentence = content.strip()
 
-    # Replace everything that is not alphabetic or punctuation with a space
-    first_sentence_cleaned = re.sub(r'[^\p{L}\s.,!?]', ' ', first_sentence)
+    return first_sentence
 
-    translated_sentence = call_project_translate(first_sentence_cleaned)
+
+def get_the_start_of_the_post(content):
+    """
+    Get the first line of content. The first line is defined by the end of a sentence
+    ('.', '?', '!', or newline), or a limit of 20 words, whichever comes first.
+
+    Parameters:
+    content (str): The input text.
+
+    Returns:
+    str: The first line of content.
+    """
+    words = content.split()
+    post_start = ' '.join(words[:100])
+
+    # Replace everything that is not alphabetic or punctuation with a space
+    post_start_cleaned = re.sub(r'[^\p{L}\s.,!?]', ' ', post_start)
+
+    translated_post_start = call_project_translate(post_start_cleaned)
 
     # Normalize the string to remove special characters
-    translated_sentence = unicodedata.normalize('NFKD', translated_sentence).encode('ascii', 'ignore').decode(
+    translated_post_start = unicodedata.normalize('NFKD', translated_post_start).encode('ascii', 'ignore').decode(
         'utf-8')
 
     # Remove emojis
-    translated_sentence = emoji.replace_emoji(translated_sentence, replace="")
+    translated_post_start = emoji.replace_emoji(translated_post_start, replace="")
 
-    return translated_sentence
+    return translated_post_start
 
 
 def extract_int_from_string(s):
@@ -232,8 +249,11 @@ EMOJIS_CONFIG_KEY = 'emojis'
 
 
 def run():
-    print(get_content_first_line(
-        "We are looking for an experienced 𝗗𝗕𝗔 with strong knowledge at 𝗦𝗤𝗟 𝗦𝗲𝗿𝘃𝗲𝗿 𝗗𝗮𝘁𝗮𝗯𝗮𝘀𝗲 to be 𝗼𝗻𝗲 of us!𝗤𝘂𝗮𝗹𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻𝘀:👉3 years working with production environment (Enterprise companies – Huge Advantage).👉 Designing high availability and disaster recovery solutions.👉Strong knowledge of SQL Server features (replication, SSIS, SSRS)👉Experience with Mirroring \ Always on"))
+    print(get_the_start_of_the_post(
+        "We are looking for an experienced 𝗗𝗕𝗔 with strong knowledge at 𝗦𝗤𝗟 𝗦𝗲𝗿𝘃𝗲𝗿 𝗗𝗮𝘁𝗮𝗯𝗮𝘀𝗲 to be"
+        "𝗼𝗻𝗲 of us!𝗤𝘂𝗮𝗹𝗶𝗳𝗶𝗰𝗮𝘁𝗶𝗼𝗻𝘀:👉3 years working with production environment (Enterprise companies – Huge Advantage)."
+        "👉 Designing high availability and disaster recovery solutions.👉Strong knowledge of SQL Server features"
+        " (replication, SSIS, SSRS)👉Experience with Mirroring Always on"))
 
 
 if __name__ == '__main__':

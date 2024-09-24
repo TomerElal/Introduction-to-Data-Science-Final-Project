@@ -24,10 +24,9 @@ tokenizer = tiktoken.encoding_for_model("gpt-4o")
 CONFIG_FILE = 'config.json'
 CSV_FILE_NAME = 'Linkedin_Posts.csv'
 DATASET_COLUMNS = [
-    'UserName', 'NumFollowers', 'ContentFirstLine', 'NumWords', 'NumPunctuation', 'NumEmojis', 'NumHashtags',
-    'NumLinks',
-    'NumLineBreaks', 'HasImage', 'HasVideo', 'PostMainSubject', 'PostMainFeeling',
-    'NumReactions', 'NumComments', 'NumShares'
+    'UserName', 'NumFollowers', 'PostStart', 'ContentFirstLine', 'NumWords', 'NumPunctuation',
+    'NumEmojis', 'NumHashtags', 'NumLinks', 'NumLineBreaks', 'HasImage', 'HasVideo', 'PostMainSubject',
+    'PostMainFeeling', 'NumReactions', 'NumComments', 'NumShares'
 ]
 LOGIN_URL = 'https://www.linkedin.com/login'
 LINKEDIN_PROFILE_URL_TEMPLATE = 'https://www.linkedin.com/in/{}/'
@@ -40,9 +39,11 @@ POST_CONTAINER_CLASS = "feed-shared-update-v2"
 SHOW_MORE_BUTTON_XPATH = ("//button[contains(@class, 'scaffold-finite-scroll__load-button')"
                           " and contains(., 'Show more results')]")
 EMOJIS_CONFIG_KEY = 'emojis'
-NUM_OF_POSTS_THRESHOLD = 15  # Minimum posts required
+NUM_OF_POSTS_THRESHOLD = 10  # Minimum posts required
 NUM_OF_TOKENS_THRESHOLD = 29000
-NUM_OF_POSTS_LIMIT = 100  # Maximum posts possible
+TIME_TO_LOGIN = 3
+MIN_WORDS_IN_POST = 20
+NUM_OF_POSTS_LIMIT = 150  # Maximum posts possible
 USERS_CONFIG_KEY = 'users'
 MY_USER_EMAIL = "username@gmail.com"  # Replace with your LinkedIn email
 MY_USER_PASSWORD = "password"  # Replace with your LinkedIn password
@@ -65,38 +66,30 @@ def extract_user_posts_attributes(driver, user_name):
     """
 
     unfiltered_posts = get_user_posts(driver, user_name)
-
-    # Make a list of keys to remove (you can't modify the dictionary while iterating over it)
-    posts = [post for post, _ in unfiltered_posts.items() if "reposted this" not in post.text]
-    posts_attributes = []
-    if len(posts) < NUM_OF_POSTS_THRESHOLD:
-        return posts_attributes
+    posts = [post for post, _ in unfiltered_posts.items() if not is_current_post_should_be_ignored(post)]
     print(f"\nTotal number of filtered posts retrieved: {len(posts)} for user: {user_name}")
+    if len(posts) < NUM_OF_POSTS_THRESHOLD:
+        return []
+
     total_tokens = 0
-    multiplier = 1
+    posts_attributes = []
+
     for post in posts:
         try:
             post_content = (post.find('div', class_='feed-shared-update-v2__description-wrapper').
                             find('span', class_='break-words').text.strip())
 
-            if is_current_post_should_be_ignored(post, post_content):
-                continue
+            print(f"\nStarted Gpt response for {user_name}.")
+            gpt_response = extract_info_from_gpt(post_content, prefix_prompt)
+            curr_num_of_tokens = (len(tokenizer.encode(prefix_prompt + post_content))
+                                  + len(tokenizer.encode(gpt_response)))
+            print("Curr post tokens used: " + str(curr_num_of_tokens))
+            total_tokens += curr_num_of_tokens
+            gpt_response = gpt_response.strip().split('\n')
+            post_main_subject, post_main_feeling = gpt_response[0], gpt_response[1]
+            print(f"Finished Gpt response for {user_name}.")
 
-            # if total_tokens > NUM_OF_TOKENS_THRESHOLD * multiplier:
-            #     multiplier += 1
-            #     time.sleep(60)
-
-            # print(f"\nStarted Gpt response for {user_name}.")
-            # gpt_response = extract_info_from_gpt(post_content, prefix_prompt)
-            # curr_num_of_tokens = (len(tokenizer.encode(prefix_prompt + post_content))
-            #                       + len(tokenizer.encode(gpt_response)))
-            # print("Curr post tokens used: " + str(curr_num_of_tokens))
-            # total_tokens += curr_num_of_tokens
-            # gpt_response = gpt_response.strip().split('\n')
-            # post_main_subject, post_main_feeling = gpt_response[0], gpt_response[1]
-            # print(f"Finished Gpt response for {user_name}.")
-
-            post_main_subject, post_main_feeling = None, None
+            # post_main_subject, post_main_feeling = None, None
 
             comments, has_image, has_video, reactions, shares = extract_data_from_post(post)
             post_attributes = compute_post_attributes(
@@ -105,31 +98,39 @@ def extract_user_posts_attributes(driver, user_name):
             )
             posts_attributes.append(post_attributes)
         except Exception as e:
-            print(e)
+            print("Method: extract_user_posts_attributes; Exception: ", e)
             continue
 
     print("Total tokens used: " + str(total_tokens))
     return posts_attributes
 
 
-def is_current_post_should_be_ignored(post, post_content):
-    # Check there is an actual post and not just a basic repost.
-    if "reposted this" in post.text:
-        return True
+def is_current_post_should_be_ignored(post):
 
-    # Check the post has enough content.
-    if len(post_content.split()) < 5:
-        return True
+    try:
+        post_content = (post.find('div', class_='feed-shared-update-v2__description-wrapper').
+                        find('span', class_='break-words').text.strip())
+        # Check there is an actual post and not just a basic repost.
+        if "reposted this" in post.text:
+            return True
 
-    # Check that the post got enough "baking time" in LinkedIn - so it got all the traffic it deserves.
-    time_element = post.find('span', class_='update-components-actor__sub-description')
-    time_text = ''
-    if time_element:
-        time_text = time_element.get_text(strip=True)
-    if 'hour' in time_text or 'minutes' in time_text:  # Indicates the post was post less than a day ago.
-        return True
+        # Check the post has enough content.
+        if len(post_content.split()) < MIN_WORDS_IN_POST:
+            return True
 
-    return False
+        # Check that the post got enough "baking time" in LinkedIn - so it got all the traffic it deserves.
+        time_element = post.find('span', class_='update-components-actor__sub-description')
+        time_text = ''
+        if time_element:
+            time_text = time_element.get_text(strip=True)
+        if 'hour' in time_text or 'minutes' in time_text:  # Indicates the post was post less than a day ago.
+            return True
+
+        return False
+
+    except Exception as e:
+        print("Method: is_current_post_should_be_ignored; Exception: ", e)
+        return True
 
 
 def compute_post_attributes(comments, content, has_image, has_video, reactions,
@@ -159,19 +160,17 @@ def compute_post_attributes(comments, content, has_image, has_video, reactions,
     num_of_reactions_in_post = utils.extract_int_from_string(reactions)
     num_of_comments_in_post = utils.extract_int_from_string(comments)
     num_of_shares_in_post = utils.extract_int_from_string(shares)
-    post_success_rate = compute_post_success_rate(
-        num_of_comments_in_post,
-        num_of_reactions_in_post,
-        num_of_shares_in_post
-    )
     num_of_emojis_in_post = utils.count_emojis(content, config[EMOJIS_CONFIG_KEY])
-    first_line = utils.get_content_first_line(content)
+    post_start = utils.get_the_start_of_the_post(content)
+    first_line = utils.get_content_first_line(post_start)
+
     posts_attribute = [
-        first_line, num_of_words_in_post, num_of_punctuation_in_post, num_of_emojis_in_post,
+        post_start, first_line, num_of_words_in_post, num_of_punctuation_in_post, num_of_emojis_in_post,
         num_of_hashtags_in_post, num_of_links_in_post, num_of_line_breaks_in_post,
         has_image, has_video, post_subject, post_feeling, num_of_reactions_in_post,
         num_of_comments_in_post, num_of_shares_in_post
     ]
+
     return posts_attribute
 
 
@@ -363,7 +362,7 @@ def login():
     password.send_keys(MY_USER_PASSWORD)
     driver.find_element(By.XPATH, LOGIN_BUTTON_XPATH).click()
 
-    time.sleep(12)  # Give time for login to complete
+    time.sleep(TIME_TO_LOGIN)  # Give time for login to complete
     return driver
 
 
