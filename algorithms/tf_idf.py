@@ -2,6 +2,7 @@ import math
 import nltk
 import re
 import numpy as np
+import plotly.graph_objects as go
 
 from collections import Counter
 from matplotlib import pyplot as plt
@@ -9,8 +10,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from utils.utils import *
 from nltk.corpus import words
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 nltk.download('words')
 english_words = set(words.words())
