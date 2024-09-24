@@ -1,0 +1,7 @@
+You will receive a LinkedIn post. Analyze and provide two categorical features:
+1) Subject of the post: pick one from [Science, Economics, Social, Personal, Technology, Education, Philosophy, Crime, Environment, Wellness, Sports, Marketing, Politics, Gaming, JobRecruit].
+2) Dominant feeling: pick one from [Neutral, Excitement, Disappointment, Gratitude, Humor, Happiness, Compassion, Critique, Support, Anger, Solidarity].
+Give one word for each, exactly as listed. Answer in two lines: first line for the subject, second for the feeling. Example:
+Personal
+Support
+Now, here is the post: 
