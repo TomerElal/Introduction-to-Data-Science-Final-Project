@@ -2,6 +2,7 @@ import math
 import nltk
 import re
 import numpy as np
+import plotly.graph_objects as go
 
 from collections import Counter
 from matplotlib import pyplot as plt
@@ -117,31 +118,29 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
     post_ratings = []
     for key in doc_keys:
         if key in df['ContentFirstLine'].values:
-            line_index = df[df['ContentFirstLine'] == key].index[0]  # Get the first match
+            line_index = df[df['ContentFirstLine'] == key].index[0]
             post_ratings.append(df.loc[line_index, 'PostRating'])
         else:
             post_ratings.append(0)
 
     plt.figure(figsize=(12, 8))
 
-    # Create the first subplot for cosine similarities
-    ax1 = plt.subplot(211)  # First subplot
+    ax1 = plt.subplot(211)
     ax1.bar(wrapped_keys, similarities, color='blue')
     ax1.set_title(f'Top 3 Similar Documents for "{post_to_predict}"', fontsize=18)
     ax1.set_ylabel('Cosine Similarity', fontsize=16)
-    ax1.set_ylim(0, 1)  # Cosine similarity ranges from 0 to 1
+    ax1.set_ylim(0, 1)
 
     for index, value in enumerate(similarities):
         ax1.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
 
-    ax1.grid(axis='y', linestyle='--', alpha=0.7)  # Add grid for better readability
+    ax1.grid(axis='y', linestyle='--', alpha=0.7)
 
-    # Create the second subplot for PostRating values
     ax2 = plt.subplot(212)  # Second subplot
     ax2.bar(wrapped_keys, post_ratings, color='orange')
     ax2.set_title('PostRating of Similar Documents', fontsize=18)
     ax2.set_ylabel('PostRating', fontsize=16)
-    ax2.set_ylim(0, max(post_ratings) + 0.5)  # Set limits based on PostRating values
+    ax2.set_ylim(0, max(post_ratings) + 0.5)
 
     for index, value in enumerate(post_ratings):
         ax2.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
@@ -152,3 +151,105 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
     plt.savefig(plot_file_path)
 
     plt.show()
+
+
+def plot_interactive_similar_documents(similar_docs, df, post_to_predict):
+    doc_keys, similarities = zip(*similar_docs)
+
+    post_contents = []
+    for key in doc_keys:
+        if key in df['ContentFirstLine'].values:
+            line_index = df[df['ContentFirstLine'] == key].index[0]
+            post_contents.append(df.loc[line_index, 'PostStart'])
+        else:
+            post_contents.append("Unknown Content")
+
+    def wrap_label(text, width=50):
+        words = text.split()
+        lines = []
+        current_line = ""
+        for word in words:
+            if len(current_line) + len(word) + 1 <= width:
+                current_line += word + " "
+            else:
+                lines.append(current_line.strip())
+                current_line = word + " "
+        lines.append(current_line.strip())
+        return "<br>".join(lines)
+
+    wrapped_post_contents = [wrap_label(content, width=15) for content in post_contents]
+
+    post_ratings = []
+    for key in doc_keys:
+        if key in df['ContentFirstLine'].values:
+            line_index = df[df['ContentFirstLine'] == key].index[0]
+            post_ratings.append(df.loc[line_index, 'PostRating'])
+        else:
+            post_ratings.append(0)
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=wrapped_post_contents,
+            y=similarities,
+            text=[f'{sim:.2f}' for sim in similarities],
+            textposition='auto',
+            marker_color='blue',
+            name="Cosine Similarity",
+            visible=True
+        )
+    )
+
+    fig.add_trace(
+        go.Bar(
+            x=wrapped_post_contents,
+            y=post_ratings,
+            text=[f'{rating:.2f}' for rating in post_ratings],
+            textposition='auto',
+            marker_color='orange',
+            name="PostRating",
+            visible=False
+        )
+    )
+
+    fig.update_layout(
+        title=f"Interactive Cosine similarity & PostRatings<br>for: '{wrap_label(post_to_predict, 50)}'",
+        title_x=0.5,
+        title_y=0.95,
+        title_font=dict(size=16),
+        xaxis=dict(
+            title='Post Content',
+            tickangle=0,
+            tickmode='array',
+            tickvals=list(range(len(wrapped_post_contents))),
+            ticktext=wrapped_post_contents
+        ),
+        yaxis=dict(title='Value'),
+        width=1000,
+        height=700,
+        margin=dict(t=100),
+        updatemenus=[
+            dict(
+                type="dropdown",
+                direction="down",
+                buttons=[
+                    dict(
+                        args=[{"visible": [True, False]}],
+                        label="Cosine Similarity",
+                        method="update"
+                    ),
+                    dict(
+                        args=[{"visible": [False, True]}],
+                        label="PostRating",
+                        method="update"
+                    )
+                ],
+                showactive=True,
+                x=1.2,
+                y=1.1
+            )
+        ]
+    )
+
+    fig.show()

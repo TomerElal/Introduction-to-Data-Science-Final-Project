@@ -75,18 +75,27 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
 
 
 def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
-
     plt.figure(figsize=(10, 6))
-    colors = ['r', 'g', 'b']
+    colors = ['r', 'g', 'b', 'c', 'm', 'y']
+
+    all_feature_np_a = []
+    all_feature_np_b = []
 
     for i, cluster in enumerate(clusters):
-        feature_np_a = np.array(
-            [df.at[point[num_cols], features[0]] for point in cluster])
-        feature_np_b = np.array(
-            [df.at[point[num_cols], features[1]] for point in cluster])
+        feature_np_a = np.array([df.at[point[num_cols], features[0]] for point in cluster])
+        feature_np_b = np.array([df.at[point[num_cols], features[1]] for point in cluster])
 
-        plt.scatter(feature_np_a, feature_np_b, c=colors[i],
-                    label=f'Cluster {i + 1}', alpha=0.7)
+        all_feature_np_a.extend(feature_np_a)
+        all_feature_np_b.extend(feature_np_b)
+
+        plt.scatter(feature_np_a, feature_np_b, c=colors[i], label=f'Cluster {i + 1}', alpha=0.7)
+
+    # Calculate limits based on percentiles to avoid outliers affecting scale
+    x_min, x_max = np.percentile(all_feature_np_a, [1, 99])
+    y_min, y_max = np.percentile(all_feature_np_b, [1, 99])
+
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
 
     plt.title(title)
     plt.xlabel(features[0])
@@ -167,7 +176,7 @@ def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distan
                                        update_centroid_func=update_centroid_func)
 
     # Plot the results
-    plot_clusters_3d(df, clusters, feature_vectors.shape[1], title, plot_features, centroids)
+    plot_clusters(df, clusters, feature_vectors.shape[1], title, plot_features, centroids)
     plot_cluster_avg_postrating(clusters, df, title)
     if type == 'numeric':
         plot_kmeans_numeric_correlations(df, clusters, feature_vectors)
@@ -191,5 +200,3 @@ def split_to_logical_categorical_features(df):
     groups.append(main_subject_group)
     groups.append(main_feeling_group)
     return groups
-
-
