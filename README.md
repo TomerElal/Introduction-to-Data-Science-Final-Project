@@ -14,9 +14,9 @@ By utilizing sophisticated crawling techniques and advanced algorithms, we aim t
 
 - **Data Extraction:** Develop a unique and efficient crawling method to gather LinkedIn post metadata.
 - **Feature Engineering:** Generate additional features using GPT to capture key aspects of the posts, such as their main subject and emotional tone (paid for that :P).
-- **Data Processing:** Normalize numeric features and create dummy variables for categorical features.
-- **Evaluation of Post Virality:** The evaluation techniques we used to estimate the post virality.
-- **Data Analysis:** Use K-means clustering, TF-IDF, Natural Language Processing and Correlation Analysis techniques to analyze post virality and other characteristics.
+- **Data Processing:** Preprocess the dataset including Normalizations, Creation of dummies variables for categorical features and more...
+- **Evaluation of Post Virality:** The evaluation technique we used to estimate the post virality.
+- **Data Analysis:** Used K-means clustering, TF-IDF, Natural Language Processing and Correlation Analysis techniques to analyze post virality and other characteristics.
 - **Visualization:** Present findings through various plots and charts for easy interpretation and conclusions.
 
 
@@ -39,6 +39,7 @@ The project involves crawling LinkedIn posts by parsing HTML tags to extract met
 - **NumComments:** The number of comments on the post.
 - **NumShares:** The count of shares the post received.
 - **ContentFirstLine:** The first line of the post content.
+- **PostContent:** The whole post content.
 
 
 The data is extracted into CSV format for further analysis.
@@ -52,9 +53,10 @@ Using the GPT API, we generate important features that capture the essence of th
 ## Data Processing
 
 The following preprocessing steps are performed on the extracted data:
-1. **Normalization:** Numeric features are scaled for consistency.
-2. **Encoding Dummies:** Categorical features are converted to dummy variables.
-3. **Text Processing:** The text is cleaned and tokenized
+1. **Encoding Dummies:** Categorical features are converted to dummy variables such as 'MainSubject', 'MainFeeling', 'HasImage' and 'HasVideo'.
+2. **Text Processing:** The text is cleaned and tokenized
+3. **PostRating generate column:** generated with the evaluation method that will be mention below a new column for the PostRating value for each post. 
+We then processed each row to a corresponding bucket of score between 100 buckets.
 
 ## Evaluation of Post Virality
 
@@ -89,10 +91,11 @@ We used several algorithms and techniques we learned throughout the semester, su
   - **Log-Rank Log-Frequency Analysis:** We conducted a log-log analysis of word occurrences to explore the distribution of word frequencies. This method helps in understanding the relationship between word rank and frequency, providing insights into which words are commonly used in LinkedIn posts versus those that are barely used.
   
 
-- **TF-IDF Analysis:** This method identifies the most significant words and phrases in the posts, allowing us to understand the key relations discussed.
+- **TF-IDF Analysis:** We use this method to predict for a given post the top similarities posts that mostly similar to the given post. the similarities are computed with Cosine distance metric from each pair of posts and their correspoding TF-IDF values conducted from a unique set of words from all documents we crawled.
+Then after finding the top similar posts, we compute their PostRating average as a prediction to how well the given post will do in the real LinkedIn platform.
 
 
-- **Correlation Analysis:** Find for each feature how does he correlate with the Virality value of the post for given evalute method.
+- **Correlation Analysis:** Find for each feature how does he correlate with the Virality value conducted from all posts together.
 
 
 
