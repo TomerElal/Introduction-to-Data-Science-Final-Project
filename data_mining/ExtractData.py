@@ -22,7 +22,7 @@ tokenizer = tiktoken.encoding_for_model("gpt-4o")
 
 # Constants
 CONFIG_FILE = 'config.json'
-CSV_FILE_NAME = 'Linkedin_Posts.csv'
+CSV_FILE_NAME = 'Linkedin_Posts_withGPT.csv'
 DATASET_COLUMNS = [
     'UserName', 'NumFollowers', 'PostStart', 'ContentFirstLine', 'NumWords', 'NumPunctuation',
     'NumEmojis', 'NumHashtags', 'NumLinks', 'NumLineBreaks', 'HasImage', 'HasVideo', 'PostMainSubject',

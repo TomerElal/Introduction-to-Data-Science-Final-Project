@@ -11,7 +11,7 @@ def k_means_execute():
     k_means_features = PostFields.NUMERIC_COLS.value
     plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
     apply(df, k_means_features, plot_features, 'K-means Clustering - Numeric Columns',
-          k=3, func=euclidean_distance, update_centroid_func=mean_centroid_func, type='numeric')
+          k=2, func=euclidean_distance, update_centroid_func=mean_centroid_func, type='numeric')
 
     # Apply 2nd K-means clustering - Dummies features
     k_means_features = {PostFields.HAS_VIDEO.value, PostFields.HAS_IMAGE.value}
@@ -19,9 +19,9 @@ def k_means_execute():
         if col.startswith(PostFields.POST_MAIN_SUBJECT.value) or col.startswith(PostFields.POST_MAIN_FEELING.value):
             k_means_features.add(col)
     k_means_features = list(k_means_features)
-    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_SHARES.value]
+    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
     apply(df, k_means_features, plot_features, 'K-means Clustering - Categorical Columns',
-          k=3, func=binary_distance, update_centroid_func=bit_count_centroid_func, type='categorical')
+          k=2, func=binary_distance, update_centroid_func=bit_count_centroid_func, type='categorical')
 
 
 def nlp_execute(documents):
@@ -51,8 +51,7 @@ if __name__ == "__main__":
     parser.add_argument('--post_to_pred', type=str, default=post_to_predict, help='Post content to predict')
     args = parser.parse_args()
 
-    file_path = 'data_mining/Linkedin_Posts.csv'
-    file_path = 'data_mining/Linkedin_Posts_withoutGPT.csv'
+    file_path = 'data_mining/Linkedin_Posts_withGPT.csv'
     df = preprocess_data(load_data(file_path))
     recap_documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
     full_documents = df[PostFields.POST_CONTENT.value].tolist()

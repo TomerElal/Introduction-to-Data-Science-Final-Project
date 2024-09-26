@@ -22,7 +22,7 @@ class PostFields(Enum):
     POST_CONTENT = 'PostStart'
 
     NUMERIC_COLS = [
-        NUM_WORDS,
+        NUM_WORDS, NUM_FOLLOWERS,
         NUM_PUNCTUATION, NUM_EMOJIS,
         NUM_HASHTAGS, NUM_LINKS,
         NUM_LINE_BREAKS

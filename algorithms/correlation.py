@@ -25,7 +25,7 @@ def plot_pearson_correlation_with_post_rating(df, eval_func_name):
     plot_file_path = f'plots/pearson_correlation_with_postrating_{eval_func_name}.png'
     plt.savefig(plot_file_path)
 
-    plt.show()
+    # plt.show()
 
 
 def evaluate_and_plot_corr_for_all_features_together(df):
@@ -72,33 +72,6 @@ def evaluate_and_plot_corr_per_feature(df):
 
 
 def plot_kmeans_numeric_correlations(df, clusters, features):
-    for feature in features:
-        for cluster_idx, cluster in enumerate(clusters):
-            plt.figure(figsize=(10, 6))
-            feature_values = np.array([df.at[point[-1], feature] for point in cluster])
-            post_rating_values = np.array([df.at[point[-1], 'PostRating'] for point in cluster])
-
-            # Plot the real points: x-axis = Feature values, y-axis = PostRating values
-            plt.scatter(feature_values, post_rating_values, label=f'Cluster {cluster_idx + 1}', alpha=0.6)
-
-            # Calculate the gradient (line of best fit)
-            if len(feature_values) > 1:
-                coefficients = np.polyfit(feature_values, post_rating_values, 1)  # Linear fit
-                trend_line = np.polyval(coefficients, feature_values)
-                plt.plot(feature_values, trend_line, color='red', linestyle='--', label='Gradient')
-
-            plt.title(f'Correlation of {feature} with PostRating - Cluster {cluster_idx + 1}')
-            plt.xlabel(f'{feature} Values')
-            plt.ylabel('PostRating Values')
-            plt.legend()
-
-            plot_file_path = f'plots/kmeans_plots/kmeans_numeric_correlation_plots/cluster_{cluster_idx + 1}_correlation/kmeans_correlation_{feature}_cluster{cluster_idx + 1}.png'
-            plt.savefig(plot_file_path)
-
-            plt.show()
-
-
-def plot_kmeans_categorical_correlations(df, clusters, features, group_name):
     cluster_avg_post_ratings = []
 
     for cluster in clusters:
@@ -107,40 +80,73 @@ def plot_kmeans_categorical_correlations(df, clusters, features, group_name):
         cluster_avg_post_ratings.append(avg_post_rating)
 
     best_cluster_idx = np.argmax(cluster_avg_post_ratings)
-    worst_cluster_idx = np.argmin(cluster_avg_post_ratings)
+    best_cluster = clusters[best_cluster_idx]
 
-    # Plot for the best and worst clusters only
-    selected_clusters = [(best_cluster_idx, clusters[best_cluster_idx]), (worst_cluster_idx, clusters[worst_cluster_idx])]
+    for feature in features:
+        plt.figure(figsize=(10, 6))
+        feature_values = np.array([df.at[point[-1], feature] for point in best_cluster])
+        post_rating_values = np.array([df.at[point[-1], 'PostRating'] for point in best_cluster])
 
-    for cluster_idx, cluster in selected_clusters:
-        plt.figure(figsize=(12, 8))
-        cluster_df = df.iloc[[point[-1] for point in cluster]]
+        plt.scatter(feature_values, post_rating_values, label=f'Best Cluster {best_cluster_idx + 1}', alpha=0.6)
 
-        avg_post_ratings = {}
+        if len(feature_values) > 1:
+            coefficients = np.polyfit(feature_values, post_rating_values, 1)  # Linear fit
+            trend_line = np.polyval(coefficients, feature_values)
+            plt.plot(feature_values, trend_line, color='red', linestyle='--', label='Gradient')
 
-        for feature in features[:-1]:
-            avg_post_rating = cluster_df.groupby(feature)['PostRating'].mean()
-            avg_post_ratings[feature] = avg_post_rating
+        plt.title(f'Correlation of {feature} with PostRating - Best Cluster ({best_cluster_idx + 1})')
+        plt.xlabel(f'{feature} Values')
+        plt.ylabel('PostRating Values')
+        plt.legend()
 
-        feature_labels = []
-        avg_ratings = []
-
-        for feature, avg_rating in avg_post_ratings.items():
-            if group_name in ["main_subject", "main_feeling"]:
-                feature = feature.split("_")[-1].strip().lstrip().lower()
-            feature_labels.extend([f'{feature}_{str(val)}' for val in avg_rating.index])
-            avg_ratings.extend(avg_rating.values)
-
-        sns.barplot(x=feature_labels, y=avg_ratings, alpha=0.8, palette='muted')
-
-        cluster_type = 'Best' if cluster_idx == best_cluster_idx else 'Worst'
-        plt.title(f'Average PostRating by Categorical Features - {cluster_type} Cluster ({cluster_idx + 1})')
-        plt.xlabel('Feature Values')
-        plt.ylabel('Average PostRating')
-        plt.xticks(rotation=45, ha='right')
-        plt.axhline(0, color='gray', linestyle='--', linewidth=0.7)
-
-        plot_file_path = f'plots/kmeans_plots/kmeans_categorical_correlation_plots/kmeans_correlation_{group_name}_{cluster_type.lower()}_cluster{cluster_idx + 1}.png'
+        plot_file_path = f'plots/kmeans_plots/kmeans_numeric_correlation_plots/best_cluster_correlations/kmeans_correlation_{feature}.png'
         plt.savefig(plot_file_path)
+        plt.clf()
 
-        plt.show()
+        # plt.show()
+
+
+def plot_kmeans_categorical_correlations(df, clusters, features, group_name):
+    cluster_avg_post_ratings = []
+
+    # Calculate average PostRating for each cluster
+    for cluster in clusters:
+        cluster_df = df.iloc[[point[-1] for point in cluster]]
+        avg_post_rating = cluster_df['PostRating'].mean()
+        cluster_avg_post_ratings.append(avg_post_rating)
+
+    best_cluster_idx = np.argmax(cluster_avg_post_ratings)
+
+    cluster_idx, cluster = best_cluster_idx, clusters[best_cluster_idx]
+    plt.figure(figsize=(12, 8))
+    cluster_df = df.iloc[[point[-1] for point in cluster]]
+
+    avg_post_ratings = {}
+
+    for feature in features[:-1]:
+        avg_post_rating = cluster_df.groupby(feature)['PostRating'].mean()
+        avg_post_ratings[feature] = avg_post_rating
+
+    feature_labels = []
+    avg_ratings = []
+
+    for feature, avg_rating in avg_post_ratings.items():
+        if group_name in ["main_subject", "main_feeling"]:
+            feature = feature.split("_")[-1].strip().lstrip().lower()
+        feature_labels.extend([f'{feature}_{str(val)}' for val in avg_rating.index])
+        avg_ratings.extend(avg_rating.values)
+
+    sns.barplot(x=feature_labels, y=avg_ratings, alpha=0.8, palette='muted')
+
+    plt.title(f'Average PostRating by Categorical Features - Best Cluster ({cluster_idx + 1})')
+    plt.xlabel('Feature Values')
+    plt.ylabel('Average PostRating')
+    plt.xticks(rotation=45, ha='right')
+    plt.axhline(0, color='gray', linestyle='--', linewidth=0.7)
+
+    plot_file_path = f'plots/kmeans_plots/kmeans_categorical_correlation_plots/kmeans_correlation_{group_name}_best_cluster.png'
+    plt.savefig(plot_file_path)
+
+    plt.clf()
+
+    # plt.show()

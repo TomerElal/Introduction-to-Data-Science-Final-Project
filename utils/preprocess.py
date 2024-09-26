@@ -22,8 +22,8 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
 
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
     numeric_cols = [col for col in numeric_cols if "Has" not in col and "Main" not in col]
-    scaler = MinMaxScaler()
-    df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+    # scaler = MinMaxScaler()
+    # df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
 
     # Add PostRating based on the chosen method
     df['PostRating'] = df.apply(post_rating_eval_method, axis=1)

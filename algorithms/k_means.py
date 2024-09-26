@@ -36,7 +36,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
                  update_centroid_func=mean_centroid_func):
     X = samples_data
     # Initialize centroids randomly
-    np.random.seed(48)
+    np.random.seed(67)
     initial_indexes = np.random.choice(X.shape[0], k, replace=False)
     initial_centroids = X.iloc[initial_indexes].values.tolist()
     centroids = initial_centroids
@@ -76,7 +76,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
 
 def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.figure(figsize=(10, 6))
-    colors = ['r', 'g', 'b', 'c', 'm', 'y']
+    colors = ['m', 'c', 'g', 'r']
 
     all_feature_np_a = []
     all_feature_np_b = []

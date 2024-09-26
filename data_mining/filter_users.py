@@ -128,7 +128,7 @@ def remove_duplicates(users_list):
 
 
 def main():
-    existing_users = get_existing_users('Linkedin_Posts.csv')
+    existing_users = get_existing_users('Linkedin_Posts_withGPT.csv')
     print("Users found in the CSV file:", existing_users)
     print("Num of Users found in the CSV file:", len(existing_users))
     print("Num of Users :", len(users))

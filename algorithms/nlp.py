@@ -3,7 +3,11 @@ import nltk
 
 from matplotlib import pyplot as plt
 from nltk import pos_tag
+from nltk.corpus import stopwords
 from wordcloud import WordCloud
+
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
 
 
 def tokens_occurrences(tokens=None):
@@ -75,6 +79,28 @@ def create_word_cloud(words):
 
 def create_log_info_and_plot(tokens, add_to_title_string=""):
     tokens_occur_dict = tokens_occurrences(tokens)
+
+    filtered_tokens_occur_dict = {word: count for word, count in tokens_occur_dict.items() if word not in stop_words
+                                  and len(word) > 2 and word != 'hashtag'}
+    sorted_tokens = sorted(filtered_tokens_occur_dict.items(), key=lambda x: x[1], reverse=True)
+
+    top_20_words = [word for word, _ in sorted_tokens[:20]]
+    top_20_counts = [count for _, count in sorted_tokens[:20]]
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(top_20_words, top_20_counts, color='skyblue')
+    plt.title(f"Top 20 Most Frequent Words")
+    plt.xlabel("Words")
+    plt.ylabel("Occurrences")
+    plt.xticks(rotation=45, ha='right')
+
+    # Save and show the plot
+    plot_file_path = f'plots/nlp_plots/top_20_words_plot.png'
+    plt.tight_layout()
+    plt.savefig(plot_file_path)
+
+    plt.show()
+
     log_rank_log_freq = create_log_rank_log_freq_sorted_arr(tokens_occur_dict)
     plot_log_log_graph(log_rank_log_freq,
                        "Log Rank - Log Freq " + add_to_title_string + " Plot",

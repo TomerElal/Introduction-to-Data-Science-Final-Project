@@ -127,12 +127,12 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
 
     ax1 = plt.subplot(211)
     ax1.bar(wrapped_keys, similarities, color='blue')
-    ax1.set_title(f'Top 3 Similar Documents for "{post_to_predict}"', fontsize=18)
+    ax1.set_title(f'Top 3 Similar Documents for given post', fontsize=18)
     ax1.set_ylabel('Cosine Similarity', fontsize=16)
     ax1.set_ylim(0, 1)
 
     for index, value in enumerate(similarities):
-        ax1.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
+        ax1.text(index, value + 0.05, f'{value:.2f}', ha='center', fontsize=14)
 
     ax1.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -143,7 +143,7 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
     ax2.set_ylim(0, max(post_ratings) + 0.5)
 
     for index, value in enumerate(post_ratings):
-        ax2.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
+        ax2.text(index, value + 0.05, f'{value:.2f}', ha='center', fontsize=14)
 
     plt.tight_layout()
     # Save the plots
