@@ -111,7 +111,7 @@ def preprocess_document(document):
     return words
 
 
-def plot_similar_documents(similar_docs, df, post_to_predict):
+def plot_similar_documents(similar_docs, df, top_10_post_rating_avg):
     doc_keys, similarities = zip(*similar_docs)
     wrapped_keys = [wrap_text(key, 15) for key in doc_keys]
 
@@ -127,7 +127,7 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
 
     ax1 = plt.subplot(211)
     ax1.bar(wrapped_keys, similarities, color='blue')
-    ax1.set_title(f'Top 3 Similar Documents for given post', fontsize=18)
+    ax1.set_title(f'Top 3 Similar posts for given post with high probability achieving: {round(top_10_post_rating_avg, 2)} rating', fontsize=18)
     ax1.set_ylabel('Cosine Similarity', fontsize=16)
     ax1.set_ylim(0, 1)
 
@@ -140,10 +140,10 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
     ax2.bar(wrapped_keys, post_ratings, color='orange')
     ax2.set_title('PostRating of Similar Documents', fontsize=18)
     ax2.set_ylabel('PostRating', fontsize=16)
-    ax2.set_ylim(0, max(post_ratings) + 0.5)
+    ax2.set_ylim(0, max(post_ratings) + 1)
 
     for index, value in enumerate(post_ratings):
-        ax2.text(index, value + 0.05, f'{value:.2f}', ha='center', fontsize=14)
+        ax2.text(index, value - 8, f'{value:.2f}', ha='center', fontsize=14)
 
     plt.tight_layout()
     # Save the plots
@@ -153,7 +153,7 @@ def plot_similar_documents(similar_docs, df, post_to_predict):
     plt.show()
 
 
-def plot_interactive_similar_documents(similar_docs, df, post_to_predict):
+def plot_interactive_similar_documents(similar_docs, df, post_to_predict, top_10_post_rating_avg):
     doc_keys, similarities = zip(*similar_docs)
 
     post_contents = []

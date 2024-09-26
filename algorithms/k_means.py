@@ -36,7 +36,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
                  update_centroid_func=mean_centroid_func):
     X = samples_data
     # Initialize centroids randomly
-    np.random.seed(67)
+    np.random.seed(68)
     initial_indexes = np.random.choice(X.shape[0], k, replace=False)
     initial_centroids = X.iloc[initial_indexes].values.tolist()
     centroids = initial_centroids
@@ -76,7 +76,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
 
 def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.figure(figsize=(10, 6))
-    colors = ['m', 'c', 'g', 'r']
+    colors = ['b', 'r', 'g', 'c']
 
     all_feature_np_a = []
     all_feature_np_b = []
@@ -109,35 +109,31 @@ def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.show()
 
 
-def plot_cluster_avg_postrating(clusters, df, title):
-    cluster_avg_postrating = {}
-
-    # Calculate the average PostRating for each cluster based on the original indices in df
+def plot_cluster_avg_postrating_and_numeric(df, clusters, numeric_cols, title, sub_title):
     for cluster_id, points in enumerate(clusters):
         original_indices = [point[-1] for point in points]
-        post_ratings = df.loc[original_indices, 'PostRating']
-        cluster_avg_postrating[cluster_id] = np.mean(post_ratings)
+        cluster_df = df.loc[original_indices]
 
-    cluster_indices = sorted(cluster_avg_postrating.keys())
-    avg_ratings = [cluster_avg_postrating[idx] for idx in cluster_indices]
+        cluster_avg_values = cluster_df[numeric_cols + ['PostRating']].mean()
+        plt.figure(figsize=(12, 8))
+        sns.barplot(x=cluster_avg_values.index, y=cluster_avg_values.values, palette='viridis')
 
-    plt.figure(figsize=(10, 8))
-    cluster_indices = [ind + 1 for ind in cluster_indices]
-    sns.barplot(x=cluster_indices, y=avg_ratings, palette='viridis')
+        plt.title(f'Average Numeric Values for Cluster {cluster_id + 1} - {title.split("-")[-1].lower()}', fontsize=18)
+        plt.xlabel('Feature', fontsize=14)
+        plt.ylabel('Average Value', fontsize=14)
 
-    plt.title(f'Average PostRating for each cluster -{title.split("-")[-1].lower()}', fontsize=18)
-    plt.xlabel('Cluster', fontsize=14)
-    plt.ylabel('Average PostRating', fontsize=14)
+        plt.ylim(0, cluster_avg_values.max() * 1.2)
 
-    plt.ylim(0, max(avg_ratings) * 1.2)
-    for index, value in enumerate(avg_ratings):
-        plt.text(index, value + 0.03, f'{value:.2f}', ha='center', fontsize=22)
+        for index, value in enumerate(cluster_avg_values.values):
+            plt.text(index, value + 0.03, f'{value:.2f}', ha='center', fontsize=12)
 
-    plt.tight_layout()
-    plot_file_path = f'plots/kmeans_plots/cluster_to_avg_rating_plot - {title.split("-")[-1].lower().strip().lstrip()}.png'
-    plt.savefig(plot_file_path)
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
 
-    plt.show()
+        plot_file_path = f'plots/kmeans_plots/cluster_avg_feature_values_cluster_{cluster_id + 1}_{sub_title}.png'
+        plt.savefig(plot_file_path)
+
+        plt.show()
 
 
 def plot_clusters_3d(df, clusters, num_cols, title, features, centroids=None):
@@ -168,7 +164,7 @@ def plot_clusters_3d(df, clusters, num_cols, title, features, centroids=None):
 
 
 def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distance,
-          update_centroid_func=mean_centroid_func, type='numeric'):
+          update_centroid_func=mean_centroid_func, type='numeric', sub_title=''):
     feature_vectors = df[k_means_features]
     clusters, centroids = apply_kmeans(samples_data=feature_vectors,
                                        k=k, max_iters=100,
@@ -177,13 +173,8 @@ def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distan
 
     # Plot the results
     plot_clusters(df, clusters, feature_vectors.shape[1], title, plot_features, centroids)
-    plot_cluster_avg_postrating(clusters, df, title)
     if type == 'numeric':
-        plot_kmeans_numeric_correlations(df, clusters, feature_vectors)
-    elif type == 'categorical':
-        features_group = split_to_logical_categorical_features(df)
-        for feature_group in features_group:
-            plot_kmeans_categorical_correlations(df, clusters, feature_group, feature_group[-1])
+        plot_cluster_avg_postrating_and_numeric(df, clusters, k_means_features, title, sub_title)
 
 
 def split_to_logical_categorical_features(df):

@@ -58,9 +58,9 @@ The following preprocessing steps are performed on the extracted data:
 
 ## Evaluation of Post Virality
 
-To assess the virality of posts, we employed 3 different methods:
+To assess the virality of posts, we employed the following methods:
 
-1. **Engagement Rating:** This function calculates the post rating based on engagement metrics (reactions, comments, and shares) relative to the user's. It applies different weights to each feature:
+**Engagement Rating:** This function calculates the post rating based on engagement metrics (reactions, comments, and shares) relative to the user's. It applies different weights to each feature:
    ```python
    def engagement_rating(row):
    
@@ -75,34 +75,6 @@ To assess the virality of posts, we employed 3 different methods:
            return engagement / row['NumFollowers']
        return 0
    ```
-
-2. **Content Quality Rating**: Content based features such as the number of words, punctuation marks, emojis, and hashtags. It operates under the assumption that more engaging content—characterized by a higher number of words, emojis, and hashtags tends to go viral.
-   ```python
-   def content_quality_rating(row):
-   
-    word_weight = 0.1
-    punctuation_weight = 0.2
-    emoji_weight = 0.3
-    hashtag_weight = 0.4
-
-    return (word_weight * row['NumWords'] +
-            punctuation_weight * row['NumPunctuation'] +
-            emoji_weight * row['NumEmojis'] +
-            hashtag_weight * row['NumHashtags'])
-   ```
-
-2. **Multi-factor Rating**: Combines the engagement score, content quality score and media presence to create a combined rating.
-   ```python
-   def multifactor_rating(row):
-   
-    engagement_score = engagement_rating(row)
-    content_quality_score = content_quality_rating(row)
-    media_bonus = 1.5 if row['HasImage'] or row['HasVideo'] else 1.0
-
-    return (0.4 * engagement_score +
-            0.4 * content_quality_score +
-            0.2 * media_bonus)
-    ```
 
 ## Analysis and Visualization
 

@@ -81,7 +81,7 @@ def create_log_info_and_plot(tokens, add_to_title_string=""):
     tokens_occur_dict = tokens_occurrences(tokens)
 
     filtered_tokens_occur_dict = {word: count for word, count in tokens_occur_dict.items() if word not in stop_words
-                                  and len(word) > 2 and word != 'hashtag'}
+                                  and len(word) > 2 and word != 'hashtag' and word != 'https'}
     sorted_tokens = sorted(filtered_tokens_occur_dict.items(), key=lambda x: x[1], reverse=True)
 
     top_20_words = [word for word, _ in sorted_tokens[:20]]

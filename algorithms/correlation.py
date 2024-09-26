@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from utils.eval_post_rating import *
@@ -34,41 +35,107 @@ def evaluate_and_plot_corr_for_all_features_together(df):
     plot_pearson_correlation_with_post_rating(df, engagement_rating.__name__)
 
 
-def evaluate_and_plot_corr_per_feature(df):
+def evaluate_and_plot_corr_per_categorical_group(df):
+    has_image_video_data = {
+        "Feature": ["HasImage", "HasVideo"],
+        "Average PostRating": [
+            df[df["HasImage"] == 1]["PostRating"].mean(),
+            df[df["HasVideo"] == 1]["PostRating"].mean()
+        ]
+    }
+    has_image_video_df = pd.DataFrame(has_image_video_data)
+
+    post_main_subject_data = {
+        "Feature": [],
+        "Average PostRating": []
+    }
+
+    post_main_subject_features = [col for col in df.columns if 'PostMainSubject' in col]
+    for feature in post_main_subject_features:
+        if feature not in post_main_subject_data["Feature"]:
+            avg_rating = df[df[feature] == 1]["PostRating"].mean()
+            post_main_subject_data["Feature"].append(feature)
+            post_main_subject_data["Average PostRating"].append(avg_rating)
+
+    post_main_subject_df = pd.DataFrame(post_main_subject_data)
+
+    post_main_feeling_data = {
+        "Feature": [],
+        "Average PostRating": []
+    }
+
+    post_main_feeling_features = [col for col in df.columns if 'PostMainFeeling' in col]
+    for feature in post_main_feeling_features:
+        if feature not in post_main_feeling_data["Feature"]:
+            avg_rating = df[df[feature] == 1]["PostRating"].mean()
+            post_main_feeling_data["Feature"].append(feature)
+            post_main_feeling_data["Average PostRating"].append(avg_rating)
+
+    post_main_feeling_df = pd.DataFrame(post_main_feeling_data)
+
+    # Plotting
+    for data_df, title in zip([has_image_video_df, post_main_subject_df, post_main_feeling_df],
+                              ["HasImage and HasVideo", "PostMainSubject Features", "PostMainFeeling Features"]):
+
+        data_df['Feature'] = data_df['Feature'].apply(lambda x: x.split('_')[-1])
+
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x='Feature', y='Average PostRating', data=data_df, palette='viridis')
+        plt.title(f'Average PostRating by {title}', fontsize=16)
+        plt.xlabel('Feature', fontsize=14)
+        plt.ylabel('Average PostRating', fontsize=14)
+        plt.xticks(rotation=45)
+        plt.axhline(0, color='gray', linestyle='--')
+        plt.tight_layout()
+
+        # Save the plot
+        plot_file_path = f'plots/pearson_correlation_plots/average_postrating_by_{title.replace(" ", "_").lower()}.png'
+        plt.savefig(plot_file_path)
+        plt.clf()
+
+
+def evaluate_and_plot_corr_per_numeric_feature(df):
     temp_df = df.copy()
-    correlation_data = {feature: [] for feature in temp_df.columns[2:]}
 
+    # Calculate the PostRating using the engagement_rating function
     temp_df['PostRating'] = temp_df.apply(engagement_rating, axis=1)
-    for feature in temp_df.columns[2:]:
-        correlation_value = temp_df[feature].corr(temp_df['PostRating'], method='pearson')
-        correlation_data[feature].append(correlation_value)
 
-    for feature in temp_df.columns[2:]:
+    for feature in temp_df.columns[3:15]:
+        if (feature.startswith('Has') or 'Comments' in feature
+                or 'Shares' in feature or 'Reactions' in feature):
+            continue
         plt.figure(figsize=(10, 8))
 
-        sns.barplot(x=[eval_func.__name__ for eval_func in [engagement_rating]],
-                    y=correlation_data[feature], palette='viridis')
+        # Scatter plot of feature vs. PostRating
+        plt.scatter(temp_df[feature], temp_df['PostRating'], alpha=0.6, label='Data Points')
 
-        plt.title(f"Pearson Correlation of {feature} with PostRating", fontsize=18)
-        plt.ylabel("Pearson Correlation Coefficient", fontsize=16)
-        plt.xlabel("Evaluation Functions", fontsize=16)
-        plt.ylim(-1, 1)  # Set y-limits to focus on the correlation range
+        # Calculate the gradient (line of best fit)
+        if len(temp_df[feature]) > 1:
+            coefficients = np.polyfit(temp_df[feature], temp_df['PostRating'], 1)  # Linear fit
+            trend_line = np.polyval(coefficients, temp_df[feature])
+            plt.plot(temp_df[feature], trend_line, color='red', linestyle='--', label='Trend Line')
 
-        # Enlarge x-axis labels
-        plt.xticks(fontsize=14)
+            # Calculate Pearson correlation
+            correlation_value = np.corrcoef(temp_df[feature], temp_df['PostRating'])[0, 1]
 
-        # Draw a horizontal line at y=0
+        # Setting the title and labels
+        plt.title(f"Scatter Plot of {feature} vs PostRating", fontsize=18)
+        plt.ylabel("PostRating", fontsize=16)
+        plt.xlabel(feature, fontsize=16)
+        plt.ylim(temp_df['PostRating'].min() - 0.1, temp_df['PostRating'].max() + 0.1)  # Set y-limits
         plt.axhline(0, color='gray', linewidth=1.5, linestyle='--')
 
-        for index, value in enumerate(correlation_data[feature]):
-            plt.text(index, value + 0.02, f'{value:.2f}', ha='center', fontsize=14)
+        # Show correlation value in the title
+        plt.legend()
+        plt.text(0.05, 0.95, f'Pearson Corr: {correlation_value:.2f}', transform=plt.gca().transAxes, fontsize=14,
+                 verticalalignment='top')
 
         plt.tight_layout()
 
+        # Save the plot
         plot_file_path = f'plots/pearson_correlation_plots/correlation_{feature}.png'
         plt.savefig(plot_file_path)
-
-        # plt.show()
+        plt.clf()
 
 
 def plot_kmeans_numeric_correlations(df, clusters, features):
