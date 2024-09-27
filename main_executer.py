@@ -30,7 +30,7 @@ def k_means_execute():
 
 
 def nlp_execute(documents):
-    tokens = [word.lower() for doc in documents for word in doc.split()]
+    tokens = [word.lower() for doc in documents for word in doc.split() if len(word.lower()) > 1]
     create_log_info_and_plot(tokens)
     create_word_cloud(tokens)
 
@@ -52,7 +52,7 @@ def tf_idf_execute(documents, post_to_predict=None):
     tf_idf_dict = generate_tf_idf_values(documents, vocab_list, idf_dict)
 
     if post_to_predict:
-        similar_docs = get_similar_documents(tf_idf_dict, post_to_predict, top_n=3)
+        similar_docs = get_similar_documents(tf_idf_dict, post_to_predict, top_n=10)
         top_10_post_rating_avg = find_top_10_post_rating_avg(similar_docs)
 
         plot_similar_documents(similar_docs[:3], df, top_10_post_rating_avg)
@@ -60,7 +60,8 @@ def tf_idf_execute(documents, post_to_predict=None):
 
         baseline_cols = [PostFields.NUM_EMOJIS.value,
                          PostFields.NUM_PUNCTUATION.value,
-                         PostFields.NUM_LINE_BREAKS.value]
+                         PostFields.NUM_LINE_BREAKS.value,
+                         PostFields.NUM_WORDS.value]
         baseline_prediction(df, post_to_predict, baseline_cols)
 
     return tf_idf_dict

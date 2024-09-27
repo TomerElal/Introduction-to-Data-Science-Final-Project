@@ -128,7 +128,7 @@ def plot_similar_documents(similar_docs, df, top_10_post_rating_avg):
     ax1 = plt.subplot(211)
     ax1.bar(wrapped_keys, similarities, color='blue')
     ax1.set_title(
-        f'Top 3 Similar posts for given post with high probability achieving: {round(top_10_post_rating_avg, 2)} rating',
+        f'Top 3 Similar posts for given post. Top 10 Average PostRating: {round(top_10_post_rating_avg, 2)}',
         fontsize=18)
     ax1.set_ylabel('Cosine Similarity', fontsize=16)
     ax1.set_ylim(0, 1)
@@ -263,25 +263,30 @@ def baseline_prediction(df, post_to_predict, numeric_cols):
     num_of_emojis_in_post = count_emojis(post_to_predict, config[EMOJIS_CONFIG_KEY])
     num_of_punctuation_in_post = count_punctuation(post_to_predict)
     num_of_line_breaks_in_post = count_line_breaks(post_to_predict)
+    num_words_normalized = count_words(post_to_predict) / 10
     given_post_numeric_values = np.array([num_of_emojis_in_post,
                                           num_of_punctuation_in_post,
-                                          num_of_line_breaks_in_post])
+                                          num_of_line_breaks_in_post,
+                                          num_words_normalized])
     distances = []
 
     for idx, row in df.iterrows():
         other_post_numeric_values = row[numeric_cols].values
+        other_post_numeric_values[-1] /= 10
         norm2_distance = np.linalg.norm(given_post_numeric_values - other_post_numeric_values)
         distances.append((idx, norm2_distance))
 
     # Sort by the smallest distances (most similar)
     distances = sorted(distances, key=lambda x: x[1])
 
-    # Get the top 3 closest documents
-    top_3_similar_docs = distances[1:4]
+    # Get the top 3, 10 closest documents
+    top_3_similar_docs = distances[2:5]
+    top_10_similar_docs = distances[2:12]
 
     # Calculate the average PostRating for the top 3 similar documents
     top_3_post_ratings = [df.loc[idx, 'PostRating'] for idx, _ in top_3_similar_docs]
-    top_3_post_rating_avg = np.mean(top_3_post_ratings)
+    top_10_post_ratings = [df.loc[idx, 'PostRating'] for idx, _ in top_10_similar_docs]
+    top_10_post_rating_avg = np.mean(top_10_post_ratings)
 
     # Prepare data for plotting
     top_3_indices = [idx for idx, _ in top_3_similar_docs]
@@ -304,7 +309,7 @@ def baseline_prediction(df, post_to_predict, numeric_cols):
     # Second subplot: PostRating for top 3 similar posts
     ax2 = plt.subplot(212)
     ax2.bar(top_3_titles, top_3_post_ratings, color='orange')
-    ax2.set_title(f'PostRatings of Top 3 Similar Posts with average of: {top_3_post_rating_avg}', fontsize=18)
+    ax2.set_title(f'Top 3 Similar Posts PostRatings. Top 10 Average PostRating: {top_10_post_rating_avg}', fontsize=18)
     ax2.set_ylabel('PostRating', fontsize=16)
     ax2.set_ylim(0, max(top_3_post_ratings) * 1.2)
 
@@ -322,4 +327,4 @@ def baseline_prediction(df, post_to_predict, numeric_cols):
 
     plt.show()
 
-    return top_3_similar_docs, top_3_post_rating_avg
+    return top_3_similar_docs, top_10_post_rating_avg

@@ -91,8 +91,11 @@ We used several algorithms and techniques we learned throughout the semester, su
   - **Log-Rank Log-Frequency Analysis:** We conducted a log-log analysis of word occurrences to explore the distribution of word frequencies. This method helps in understanding the relationship between word rank and frequency, providing insights into which words are commonly used in LinkedIn posts versus those that are barely used.
   
 
-- **TF-IDF Analysis:** We use this method to predict for a given post the top similarities posts that mostly similar to the given post. the similarities are computed with Cosine distance metric from each pair of posts and their correspoding TF-IDF values conducted from a unique set of words from all documents we crawled.
+- **TF-IDF Analysis:** We use this method to predict for a given post the top similarities posts that mostly similar to the given post. the similarities are computed with Cosine distance metric from each pair of posts and their corresponding TF-IDF values conducted from a unique set of words from all documents we crawled.
 Then after finding the top similar posts, we compute their PostRating average as a prediction to how well the given post will do in the real LinkedIn platform.
+- **Baseline Analysis:** We use a baseline metric to compare the results for our prediction to another baseline prediction.
+The baseline metric is norm2 distance between normalized samples, we compute for the given post the same flow mentioned as the TF-IDF model flow,
+to find the top doc similarities and their average PostRating values.
 
 
 - **Correlation Analysis:** Find for each feature how does he correlate with the Virality value conducted from all posts together.
