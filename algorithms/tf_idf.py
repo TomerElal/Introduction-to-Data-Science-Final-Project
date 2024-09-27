@@ -253,3 +253,80 @@ def plot_interactive_similar_documents(similar_docs, df, post_to_predict, top_10
     )
 
     fig.show()
+
+
+def baseline_prediction(df, post_to_predict, numeric_cols):
+    """
+    Finds the top 3 similar documents according to norm2 distance of numeric columns and plots the result.
+
+    :param df: DataFrame containing the documents and their numeric values
+    :param post_to_predict: The post (document) for which we need to predict the similarity
+    :param numeric_cols: List of numeric columns to use for norm2 distance calculation
+    :return: Top 3 similar documents and their average PostRating
+    """
+    # Extract the numeric values of the post_to_predict
+    if post_to_predict in df['ContentFirstLine'].values:
+        post_index = df[df['ContentFirstLine'] == post_to_predict].index[0]
+    else:
+        print(f"Post '{post_to_predict}' not found in the DataFrame.")
+        return None
+
+    post_numeric_values = df.loc[post_index, numeric_cols].values
+
+    # Calculate norm2 (Euclidean) distance between the post_to_predict and all other documents
+    distances = []
+
+    for idx, row in df.iterrows():
+        if idx != post_index:  # Skip the post itself
+            other_post_numeric_values = row[numeric_cols].values
+            norm2_distance = np.linalg.norm(post_numeric_values - other_post_numeric_values)
+            distances.append((idx, norm2_distance))
+
+    # Sort by the smallest distances (most similar)
+    distances = sorted(distances, key=lambda x: x[1])
+
+    # Get the top 3 closest documents
+    top_3_similar_docs = distances[:3]
+
+    # Calculate the average PostRating for the top 3 similar documents
+    top_3_post_ratings = [df.loc[idx, 'PostRating'] for idx, _ in top_3_similar_docs]
+    top_3_post_rating_avg = np.mean(top_3_post_ratings)
+
+    # Prepare data for plotting
+    top_3_indices = [idx for idx, _ in top_3_similar_docs]
+    top_3_distances = [dist for _, dist in top_3_similar_docs]
+    top_3_titles = [df.loc[idx, 'ContentFirstLine'] for idx in top_3_indices]
+
+    # Plotting the results
+    plt.figure(figsize=(12, 8))
+
+    # First subplot: Euclidean distances
+    ax1 = plt.subplot(211)
+    ax1.bar(top_3_titles, top_3_distances, color='blue')
+    ax1.set_title(f'Top 3 Similar Posts to "{post_to_predict}" Based on Euclidean Distance', fontsize=18)
+    ax1.set_ylabel('Norm2 Distance', fontsize=16)
+    ax1.set_ylim(0, max(top_3_distances) * 1.2)
+
+    for index, value in enumerate(top_3_distances):
+        ax1.text(index, value + 0.05, f'{value:.2f}', ha='center', fontsize=14)
+
+    # Second subplot: PostRating for top 3 similar posts
+    ax2 = plt.subplot(212)
+    ax2.bar(top_3_titles, top_3_post_ratings, color='orange')
+    ax2.set_title(f'PostRatings of Top 3 Similar Posts', fontsize=18)
+    ax2.set_ylabel('PostRating', fontsize=16)
+    ax2.set_ylim(0, max(top_3_post_ratings) * 1.2)
+
+    for index, value in enumerate(top_3_post_ratings):
+        ax2.text(index, value + 0.05, f'{value:.2f}', ha='center', fontsize=14)
+
+    plt.tight_layout()
+
+    # Save the plot
+    plot_file_path = f'plots/baseline_prediction/top_3_similar_posts_plot.png'
+    plt.savefig(plot_file_path)
+
+    plt.show()
+
+    # Return the top 3 similar documents and the average PostRating
+    return top_3_similar_docs, top_3_post_rating_avg

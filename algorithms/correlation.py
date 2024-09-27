@@ -37,10 +37,12 @@ def evaluate_and_plot_corr_for_all_features_together(df):
 
 def evaluate_and_plot_corr_per_categorical_group(df):
     has_image_video_data = {
-        "Feature": ["HasImage", "HasVideo"],
-        "Average PostRating": [
-            df[df["HasImage"] == 1]["PostRating"].mean(),
-            df[df["HasVideo"] == 1]["PostRating"].mean()
+        "Feature": ["HasImage", "HasVideo", "NoImage", "NoVideo"],
+        "Average NumShares": [
+            df[df["HasImage"] == 1]["NumShares"].mean(),
+            df[df["HasVideo"] == 1]["NumShares"].mean(),
+            df[df["HasImage"] == 0]["NumShares"].mean(),
+            df[df["HasVideo"] == 0]["NumShares"].mean()
         ]
     }
     has_image_video_df = pd.DataFrame(has_image_video_data)
@@ -79,17 +81,21 @@ def evaluate_and_plot_corr_per_categorical_group(df):
 
         data_df['Feature'] = data_df['Feature'].apply(lambda x: x.split('_')[-1])
 
+        by_y_axis_name = 'PostRating'
+        if "Has" in title:
+            by_y_axis_name = 'NumShares'
+
         plt.figure(figsize=(10, 6))
-        sns.barplot(x='Feature', y='Average PostRating', data=data_df, palette='viridis')
-        plt.title(f'Average PostRating by {title}', fontsize=16)
+        sns.barplot(x='Feature', y=f'Average {by_y_axis_name}', data=data_df, palette='viridis')
+        plt.title(f'Average {by_y_axis_name} by {title}', fontsize=16)
         plt.xlabel('Feature', fontsize=14)
-        plt.ylabel('Average PostRating', fontsize=14)
+        plt.ylabel(f'Average {by_y_axis_name}', fontsize=14)
         plt.xticks(rotation=45)
         plt.axhline(0, color='gray', linestyle='--')
         plt.tight_layout()
 
         # Save the plot
-        plot_file_path = f'plots/pearson_correlation_plots/average_postrating_by_{title.replace(" ", "_").lower()}.png'
+        plot_file_path = f'plots/pearson_correlation_plots/average_{by_y_axis_name.lower()}_by_{title.replace(" ", "_").lower()}.png'
         plt.savefig(plot_file_path)
         plt.clf()
 
@@ -97,12 +103,9 @@ def evaluate_and_plot_corr_per_categorical_group(df):
 def evaluate_and_plot_corr_per_numeric_feature(df):
     temp_df = df.copy()
 
-    # Calculate the PostRating using the engagement_rating function
-    temp_df['PostRating'] = temp_df.apply(engagement_rating, axis=1)
-
     for feature in temp_df.columns[3:15]:
         if (feature.startswith('Has') or 'Comments' in feature
-                or 'Shares' in feature or 'Reactions' in feature):
+                or 'Shares' in feature or 'Reactions' in feature or 'Followers' in feature):
             continue
         plt.figure(figsize=(10, 8))
 

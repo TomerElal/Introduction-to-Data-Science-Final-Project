@@ -36,7 +36,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
                  update_centroid_func=mean_centroid_func):
     X = samples_data
     # Initialize centroids randomly
-    np.random.seed(68)
+    np.random.seed(69)
     initial_indexes = np.random.choice(X.shape[0], k, replace=False)
     initial_centroids = X.iloc[initial_indexes].values.tolist()
     centroids = initial_centroids
@@ -76,7 +76,7 @@ def apply_kmeans(samples_data, k=3, max_iters=100,
 
 def plot_clusters(df, clusters, num_cols, title, features, centroids=None):
     plt.figure(figsize=(10, 6))
-    colors = ['b', 'r', 'g', 'c']
+    colors = ['b', 'r', 'g', 'c', 'm', 'y']
 
     all_feature_np_a = []
     all_feature_np_b = []
@@ -170,6 +170,9 @@ def apply(df, k_means_features, plot_features, title, k=2, func=euclidean_distan
                                        k=k, max_iters=100,
                                        func=func,
                                        update_centroid_func=update_centroid_func)
+
+    for i, cluster in enumerate(clusters):
+        print(f"Length of cluster number {i} is {len(cluster)}")
 
     # Plot the results
     plot_clusters(df, clusters, feature_vectors.shape[1], title, plot_features, centroids)

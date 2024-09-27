@@ -8,15 +8,14 @@ from utils.preprocess import *
 
 def k_means_execute():
     # Apply 1st K-means clustering
-    k_means_features = [PostFields.NUM_WORDS.value, PostFields.NUM_PUNCTUATION.value,
-                        PostFields.NUM_LINKS.value, PostFields.NUM_LINE_BREAKS.value]
+    k_means_features = [PostFields.NUM_EMOJIS.value, PostFields.NUM_PUNCTUATION.value, PostFields.NUM_LINE_BREAKS.value]
     plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
-    apply(df, k_means_features, plot_features, 'K-means-Clustering-Post-Structure',
-          k=3, func=euclidean_distance, update_centroid_func=mean_centroid_func,
-          type='numeric', sub_title='Post Structure')
+    apply(df, k_means_features, plot_features, 'K-means-Clustering-Post-Aesthetics',
+          k=4, func=euclidean_distance, update_centroid_func=mean_centroid_func,
+          type='numeric', sub_title='Post Aesthetics')
 
     # Apply 2nd K-means clustering
-    k_means_features = [PostFields.NUM_EMOJIS.value, PostFields.NUM_HASHTAGS.value]
+    k_means_features = [PostFields.NUM_LINKS.value, PostFields.NUM_HASHTAGS.value]
     plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
     apply(df, k_means_features, plot_features, 'K-means-Clustering-External-Columns',
           k=2, func=euclidean_distance, update_centroid_func=mean_centroid_func,
@@ -24,9 +23,9 @@ def k_means_execute():
 
     # Apply 3rd K-means clustering - Dummies features
     k_means_features = [PostFields.HAS_VIDEO.value, PostFields.HAS_IMAGE.value]
-    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_SHARES.value]
-    apply(df, k_means_features, plot_features, 'K-means Clustering - Visual Columns',
-          k=3, func=binary_distance, update_centroid_func=bit_count_centroid_func,
+    plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
+    apply(df, k_means_features, plot_features, 'K-means-Clustering-Visual-Columns',
+          k=2, func=binary_distance, update_centroid_func=bit_count_centroid_func,
           type='categorical', sub_title='Visual Columns')
 
 
@@ -59,6 +58,9 @@ def tf_idf_execute(documents, post_to_predict=None):
         plot_similar_documents(similar_docs[:3], df, top_10_post_rating_avg)
         plot_interactive_similar_documents(similar_docs[:3], df, post_to_predict, top_10_post_rating_avg)
 
+        baseline_cols = [PostFields.NUM_EMOJIS.value]
+        baseline_prediction(df, post_to_predict, baseline_cols)
+
     return tf_idf_dict
 
 
@@ -73,19 +75,20 @@ if __name__ == "__main__":
     parser.add_argument('--post_to_pred', type=str, default=post_to_predict, help='Post content to predict')
     args = parser.parse_args()
 
-    file_path = 'data_mining/Linkedin_Posts_withGPT.csv'
-    df = preprocess_data(load_data(file_path))
+    # file_path = 'data_mining/Linkedin_Posts_withGPT.csv'
+    # df = preprocess_data(load_data(file_path))
+
+    df = load_data('data_mining/Linkedin_Posts_Updated.csv')
     recap_documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
     full_documents = df[PostFields.POST_CONTENT.value].tolist()
 
-    df = load_data('data_mining/Linkedin_Posts.csv')
-
+    print("DONE PROCESS DATASET")
     # Calling all algorithms executions
-    correlation_execute()
+    #correlation_execute()
     print("Done Correlations")
-    k_means_execute()
+    #k_means_execute()
     print("Done Kmeans")
-    nlp_execute(full_documents)
+    #nlp_execute(full_documents)
     print("Done NLP")
     tf_idf_execute(recap_documents, post_to_predict)
     print("Done TF-IDF")

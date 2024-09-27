@@ -43,7 +43,9 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
     # Divide each post to a bucket 1 from 1-100
     normalize_column(df, PostFields.POST_RATING.value)
 
-    return df
+    normalize_aesthetic_attributes('data_mining/Linkedin_Posts.csv')
+
+    return pd.read_csv('data_mining/Linkedin_Posts.csv')
 
 
 def assign_virality_group(post_ratings, group_start_points):
@@ -78,3 +80,33 @@ def create_virality_groups(post_ratings, num_groups=100):
         group_start_points.append(sorted_ratings.iloc[i])
 
     return group_start_points
+
+
+def normalize_aesthetic_attributes(csv_file):
+    df = pd.read_csv(csv_file)
+
+    def normalize_num_emojis(row):
+        if row['NumEmojis'] > 10:
+            return 10
+        else:
+            return row['NumEmojis']
+
+    def normalize_num_linebreaks(row):
+        if row['NumLineBreaks'] > 100:
+            return 10
+        else:
+            return row['NumLineBreaks'] / 10  # Try division with one '/'
+
+    def normalize_num_punctuation(row):
+        if row['NumPunctuation'] > 100:
+            return 10
+        else:
+            return row['NumPunctuation'] / 10  # Try division with one '/'
+
+    # Apply the functions to the respective columns
+    df['NumEmojis'] = df.apply(normalize_num_emojis, axis=1)
+    df['NumLineBreaks'] = df.apply(normalize_num_linebreaks, axis=1)
+    df['NumPunctuation'] = df.apply(normalize_num_punctuation, axis=1)
+
+    # Save the updated dataset back to a new CSV file
+    df.to_csv('data_mining/Linkedin_Posts.csv', index=False)
