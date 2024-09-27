@@ -58,7 +58,9 @@ def tf_idf_execute(documents, post_to_predict=None):
         plot_similar_documents(similar_docs[:3], df, top_10_post_rating_avg)
         plot_interactive_similar_documents(similar_docs[:3], df, post_to_predict, top_10_post_rating_avg)
 
-        baseline_cols = [PostFields.NUM_EMOJIS.value]
+        baseline_cols = [PostFields.NUM_EMOJIS.value,
+                         PostFields.NUM_PUNCTUATION.value,
+                         PostFields.NUM_LINE_BREAKS.value]
         baseline_prediction(df, post_to_predict, baseline_cols)
 
     return tf_idf_dict
@@ -84,11 +86,11 @@ if __name__ == "__main__":
 
     print("DONE PROCESS DATASET")
     # Calling all algorithms executions
-    #correlation_execute()
+    correlation_execute()
     print("Done Correlations")
-    #k_means_execute()
+    k_means_execute()
     print("Done Kmeans")
-    #nlp_execute(full_documents)
+    nlp_execute(full_documents)
     print("Done NLP")
     tf_idf_execute(recap_documents, post_to_predict)
     print("Done TF-IDF")
