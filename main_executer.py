@@ -35,13 +35,13 @@ def nlp_execute(documents):
     create_word_cloud(tokens)
 
 
-def find_top_10_post_rating_avg(similar_docs):
-    top_10_post_ratings = []
+def find_top_post_rating_avg(similar_docs):
+    top_post_ratings = []
     for doc in similar_docs:
         matching_row = df[df['ContentFirstLine'] == doc[0]]
-        top_10_post_ratings.append(matching_row['PostRating'].values[0])
+        top_post_ratings.append(matching_row['PostRating'].values[0])
 
-    return round(sum(top_10_post_ratings) / len(top_10_post_ratings), 2)
+    return round(sum(top_post_ratings) / len(top_post_ratings), 2)
 
 
 def tf_idf_execute(documents, post_to_predict=None):
@@ -52,11 +52,11 @@ def tf_idf_execute(documents, post_to_predict=None):
     tf_idf_dict = generate_tf_idf_values(documents, vocab_list, idf_dict)
 
     if post_to_predict:
-        similar_docs = get_similar_documents(tf_idf_dict, post_to_predict, top_n=10)
-        top_10_post_rating_avg = find_top_10_post_rating_avg(similar_docs)
+        similar_docs = get_similar_documents(tf_idf_dict, post_to_predict, top_n=3)
+        top_3_post_rating_avg = find_top_post_rating_avg(similar_docs)
 
-        plot_similar_documents(similar_docs[:3], df, top_10_post_rating_avg)
-        plot_interactive_similar_documents(similar_docs[:3], df, post_to_predict, top_10_post_rating_avg)
+        plot_similar_documents(similar_docs[:3], df, top_3_post_rating_avg)
+        plot_interactive_similar_documents(similar_docs[:3], df, post_to_predict, top_3_post_rating_avg)
 
         baseline_cols = [PostFields.NUM_EMOJIS.value,
                          PostFields.NUM_PUNCTUATION.value,
@@ -82,8 +82,12 @@ if __name__ == "__main__":
     # df = preprocess_data(load_data(file_path))
 
     df = load_data('data_mining/Linkedin_Posts_Updated.csv')
+    df['NumWords'] = df.apply(normalize_num_words, axis=1)
+
     recap_documents = df[PostFields.CONTENT_FIRST_LINE.value].tolist()
-    full_documents = df[PostFields.POST_CONTENT.value].tolist()
+
+    filtered_df = df[df[PostFields.POST_RATING.value] >= 50]
+    full_documents = filtered_df[PostFields.POST_CONTENT.value].tolist()
 
     print("DONE PROCESS DATASET")
     # Calling all algorithms executions

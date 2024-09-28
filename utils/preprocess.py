@@ -48,6 +48,10 @@ def preprocess_data(df, post_rating_eval_method=engagement_rating):
     return pd.read_csv('data_mining/Linkedin_Posts.csv')
 
 
+def normalize_num_words(row):
+    return row['NumWords'] / 10
+
+
 def assign_virality_group(post_ratings, group_start_points):
     group_numbers = []
 
