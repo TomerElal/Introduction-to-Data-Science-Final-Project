@@ -18,7 +18,7 @@ def k_means_execute():
     k_means_features = [PostFields.NUM_LINKS.value, PostFields.NUM_HASHTAGS.value]
     plot_features = [PostFields.NUM_REACTIONS.value, PostFields.NUM_COMMENTS.value]
     apply(df, k_means_features, plot_features, 'K-means-Clustering-External-Columns',
-          k=2, func=euclidean_distance, update_centroid_func=mean_centroid_func,
+          k=4, func=euclidean_distance, update_centroid_func=mean_centroid_func,
           type='numeric', sub_title='External Columns')
 
     # Apply 3rd K-means clustering - Dummies features
