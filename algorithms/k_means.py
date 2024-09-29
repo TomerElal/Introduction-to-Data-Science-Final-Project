@@ -122,7 +122,7 @@ def plot_cluster_avg_postrating_and_numeric(df, clusters, numeric_cols, title, s
         plt.xlabel('Feature', fontsize=14)
         plt.ylabel('Average Value', fontsize=14)
 
-        plt.ylim(0, cluster_avg_values.max() * 1.2)
+        plt.ylim(0, 75)
 
         for index, value in enumerate(cluster_avg_values.values):
             plt.text(index, value + 0.03, f'{value:.2f}', ha='center', fontsize=12)

@@ -105,8 +105,8 @@ def evaluate_and_plot_corr_per_numeric_feature(df):
 
     for feature in temp_df.columns[3:15]:
         if (feature.startswith('Has') or 'Comments' in feature
-                or 'Shares' in feature or 'Reactions' in feature or 'Followers' in feature
-                or 'Hashtags' in feature or 'Links' in feature):
+                or 'Shares' in feature or 'Reactions' in feature
+                or 'Followers' in feature or 'Hashtags' in feature):
             continue
         plt.figure(figsize=(10, 8))
 
